@@ -1,4 +1,4 @@
-# wavetable_banks_csound_bela
+# wavetable_banks_bela_csound
 
 A [Csound](https://csound.com) implementation of a wavetable synth for [Bela Pepper](https://learn.bela.io/products/modular/pepper/) .
 
