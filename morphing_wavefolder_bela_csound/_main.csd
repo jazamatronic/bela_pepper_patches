@@ -29,7 +29,7 @@ ginumwaves   = 3
 ginumshapers = 8
 gimaxdel     = 20
 giparamport  = 0.01
-gimaxdetune  = 1/12
+gimaxdetune  = 1 / 24
 gidriftfreq1 = 0.3
 gidriftfreq2 = 0.31
 gidriftfreq3 = 0.29
@@ -61,6 +61,9 @@ giled_so = 6
 giled_sync = 7
 giled_drone = 10
 giled_phase = 2
+giled_id0 = 8
+giled_id1 = 5
+giled_id2 = 4
 
 ; simple toggle detector
 ; may need to add some debounce mechanism on real hardware but seems to work 
@@ -82,6 +85,10 @@ opcode toggle_button, k, i
 endop
 
 instr   1
+
+  digiOutBela 1, giled_id0
+  digiOutBela 0, giled_id1
+  digiOutBela 0, giled_id2
   
   amidinote chnget "analogIn0"
   ;This works with my 61SL MkIII
@@ -118,6 +125,11 @@ instr   1
 
   adetune chnget "analogIn5"
   kdetunep port k(adetune), giparamport
+  kdetunes scale kdetunep, gimaxdetune, 0
+  kdtndn = 1 - kdetunes
+  kdtnup = 1 + (kdetunes * 2)
+  khertzdn = khertz * kdtndn
+  khertzup = khertz * kdtnup
   
   adrift chnget "analogIn6"
   kdriftp port k(adrift), giparamport
@@ -137,8 +149,8 @@ instr   1
   ; two tableikt's driven by a phasor to allow wave morphing
   aosc1, aosc1so  syncphasor khertz + (khertz * kd1p), asyncin
   aosc1soks = aosc1so * ksync
-  aosc2, aosc2so  syncphasor khertz * (1 + (kdetunep * gimaxdetune)) + (khertz * kd2p), aosc1soks
-  aosc3, aosc3so  syncphasor khertz * (1 - (kdetunep * gimaxdetune)) + (khertz * kd3p), aosc1soks
+  aosc2, aosc2so  syncphasor khertzup + (khertz * kd2p), aosc1soks
+  aosc3, aosc3so  syncphasor khertzdn + (khertz * kd3p), aosc1soks
   
   aindex1 tableikt aosc1, 101 + kmorpht, 1
   aindex2 tableikt aosc1, 101 + kmorpht + 1, 1

@@ -47,6 +47,9 @@ giled_interp = 6
 giled_up = 10
 giled_dn = 7
 giled_xy_mode = 2
+giled_id0 = 8
+giled_id1 = 5
+giled_id2 = 4
 
 gisine ftgen 0, 0, 256, 10, 1 ; for sub_osc
 
@@ -137,6 +140,11 @@ opcode toggle_button, k, i
 endop
 
 instr 1
+
+  digiOutBela 0, giled_id0
+  digiOutBela 1, giled_id1
+  digiOutBela 0, giled_id2
+  
   ;Some banks:
   ; "/data/AKWF/AKWF--Synthesis-Technology/Wavetables/AK01.wav"
   ; "/data/WaveEdit/banks/ROM C.wav"
