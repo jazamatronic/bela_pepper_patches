@@ -14,18 +14,20 @@ nchnls = 2
 ; 1 = filt out
 ; 2 = dist in
 ; 3 = dist out
-zakinit 4, 1
+; 4+ slots for 12 oscs
+zakinit 16, 1
 
-giexp0 			= 0.001
-gimaxt 			= 5
-gibetamax		= 2
-gimodimax		= 20
-gimidimax		= 84  ; C6
-gimidimin		= 24  ; C1
-gimaxfc 		= 22050
-gimaxq 			= 10
-giparamthresh		= 0.05
-gigatethresh		= 0.1
+giexp0 		= 0.001
+gimaxt 		= 5
+gimaxoscs	= 13
+gimidimax	= 84  ; C6
+gimidimin	= 24  ; C1
+gimaxfc 	= 22050
+gimaxq 		= 10
+giparamthresh	= 0.05
+gizakvcostart	= 4
+gioscgain	= 0.7
+gigatethresh	= 0.1
 
 /*
  * From https://github.com/BelaPlatform/bela-pepper/wiki/Pin-numbering
@@ -55,17 +57,37 @@ giled_sync    = 2
 giled_exp_env = 3
 giled_env_inv = 0
 giled_port    = 1
-giled_id0 = 8
-giled_id1 = 5
-giled_id2 = 4
+giled_id0     = 8
+giled_id1     = 5
+giled_id2     = 4
 
-; sine wave for oscillators
-gisin ftgen 0, 0, 4096, 10, 1
+gaso1 init 0 ; global sync
+
 ; exponential for ADSR controls
-giexp ftgen 0, 0, 256, 5, giexp0, 256, 1, 0
+giexp  ftgen	0, 0, 256, 5, giexp0, 256, 1, 0
+
+givcotable_start vco2init 31, giexp+1, 0, 128, 2^16
 
 #include "../udos/pages_buttons_params.udo"
 
+; outputs: 	k = detuned freq
+; inputs:	k = freq to be detuned
+;		k = detune amount between 0 and 1
+;		k = detune multiplier, use to spread dtns up and down
+;
+; Detune for super osc
+; Takes an input freq and detunes it either up or down up to an octave
+opcode detune, k, kkk
+  kfreq, kdtn, km xin
+  kdtn = 1 + (km * kdtn)
+  kdtn min 2, kdtn
+  kdtn max 0.5, kdtn
+  kfreq_dtn = kfreq * kdtn
+    xout kfreq_dtn
+endop
+
+; Global Control Instrument
+;
 ; multi pages
 ;
 ; Inputs zero and one on all pages - the V/Oct and Gate
@@ -73,30 +95,27 @@ giexp ftgen 0, 0, 256, 5, giexp0, 256, 1, 0
 ; btn0 = cycle page button
 ;
 ; Page zero:
-;   CV:
-;     two:  Fc	  three: Q
-;     four: beta  five:  modi
-;     six:  dtn	  seven: dist
+;   two:  Fc	    three: Q
+;   four: Num Oscs  five: Osc shape 
+;   six:  dtn	    seven: dist
 ;
 ;   Buttons:
-;     fcmod order sync 
+;     fcmod order sync
 ;   
 ; Page one:
-;   CV:
-;     two:  A	  three: D
-;     four: S	  five:  R
-;     six:  port  seven: mix
-;
+;   two:  A	  three: D
+;   four: S	  five:  R
+;   six:  port	  seven: mix
+;   
 ;   Buttons:
 ;     exp_env env_inv portamento
-;   
 
 ; adsr trigger
 instr 1
 
-  digiOutBela 1, giled_id0
-  digiOutBela 1, giled_id1
-  digiOutBela 0, giled_id2
+  digiOutBela 0, giled_id0
+  digiOutBela 0, giled_id1
+  digiOutBela 1, giled_id2
   
 
   kpage	     init     0
@@ -122,22 +141,13 @@ instr 1
     gkport    toggle_button, kbtn3
   endif
 
-  digiOutBela kpage,	  giled_page
-  digiOutBela gkfcmod,	  giled_fcmod  
-  digiOutBela gkorder, 	  giled_order  
-  digiOutBela gksync,  	  giled_sync   
-  digiOutBela gkexp_env,  giled_exp_env
-  digiOutBela gkenv_inv,  giled_env_inv
-  digiOutBela gkport,     giled_port   
-
-
 ; bela CV inputs
   amidinote chnget "analogIn0"
   ;This works with my 61SL MkIII
   gkmidinote = 14 + k(amidinote) * 120
 
-  akgate     chnget  "analogIn1"
-  gkgate = k(akgate)
+  akgate    chnget  "analogIn1"
+  gkate = k(akgate)
 
   acv2       chnget  "analogIn2"
   acv3       chnget  "analogIn3"
@@ -153,22 +163,46 @@ instr 1
   kcv6 = k(acv6)
   kcv7 = k(acv7)
 
-  gkfc	  locked_param kcv2, 1,	    0, kpage, giparamthresh
-  gkq	  locked_param kcv3, 0,	    0, kpage, giparamthresh
-  gkbeta  locked_param kcv4, 0.15,  0, kpage, giparamthresh
-  gkmodi  locked_param kcv5, 0,	    0, kpage, giparamthresh
-  gkdtn	  locked_param kcv6, 0,	    0, kpage, giparamthresh
-  gkdist  locked_param kcv7, 0,	    0, kpage, giparamthresh
+  gkfc	  locked_param kcv2, 1,	0, kpage, giparamthresh
+  gkq	  locked_param kcv3, 0,	0, kpage, giparamthresh
+  knoscs  locked_param kcv4, 0,	0, kpage, giparamthresh
+  kshape  locked_param kcv5, 0,	0, kpage, giparamthresh
+  kdtn	  locked_param kcv6, 0,	0, kpage, giparamthresh
+  gkdist  locked_param kcv7, 0,	0, kpage, giparamthresh
+
+  kat     locked_param kcv2,	0.1,	1, kpage, giparamthresh
+  kdt     locked_param kcv3,	0.1,	1, kpage, giparamthresh
+  ksl     locked_param kcv4,	1,		1, kpage, giparamthresh
+  krt     locked_param kcv5,	0.1,	1, kpage, giparamthresh
+  gkptim  locked_param kcv6,	0,		1, kpage, giparamthresh
+  gkmix	  locked_param kcv7,	1,		1, kpage, giparamthresh
+
+  khertzi = cpsmidinn(int(kmidinote))
+  if (gkport == 1) then
+    gkhertz portk khertzi, gkptim
+  else
+    gkhertz = khertzi
+  endif
+	
+  kfnshape = int(kshape * 4.99)
+  if (kfnshape == 0) then
+    gkfn  vco2ft gkhertz, 0 ; saw
+  elseif (kfnshape == 1) then
+    gkfn  vco2ft gkhertz, 3 ; square
+  elseif (kfnshape == 2) then
+    gkfn  vco2ft gkhertz, 4 ; tri
+  elseif (kfnshape == 3) then
+    gkfn  vco2ft gkhertz, 1 ; integrated saw
+  elseif (kfnshape == 4) then
+    gkfn  vco2ft gkhertz, 2 ; ouch, ever heard of Nyquist?
+  endif
+				  
+  gknoscs scale knoscs, gimaxoscs, 1
+  gknoscs = int(gknoscs)
   
-  kat     locked_param kcv2, 0.1, 1, kpage, giparamthresh
-  kdt     locked_param kcv3, 0.1, 1, kpage, giparamthresh
-  ksl     locked_param kcv4, 1,	  1, kpage, giparamthresh
-  krt     locked_param kcv5, 0.1, 1, kpage, giparamthresh
-  gkptim  locked_param kcv6, 0,	  1, kpage, giparamthresh
-  gkmix	  locked_param kcv7, 1,	  1, kpage, giparamthresh
-	  
-  
-  ktrig trigger gkgate, gigatethresh, 2 ; triggers on both edges
+  gkdtn  scale kdtn, 0.5, 0
+		  
+  ktrig trigger gkgate, gigatethresh, 2
   if (ktrig == 1) then
     if (gkgate > gigatethresh) then
       ; adsr changes only count when we've got an event to create
@@ -206,7 +240,7 @@ instr 1
     gkenvo = 1 - gkenv
   else
     gkenvo = gkenv
-	endif
+  endif
 endin
 
 ; adsr gen
@@ -227,10 +261,10 @@ endin
 ; input is zak channel 0
 ; output is zak channel 1
 instr 3
-  kfce tablei gkfc, giexp, 1
-  kfce = kfce * gimaxfc
+  kfce	tablei gkfc, giexp, 1
+  kfce	= kfce * gimaxfc
   if (gkfcmod == 1) then
-    kfce = kfce * gkenvo
+  	kfce = kfce * gkenvo
   endif
   
   kq = gkq * gimaxq
@@ -245,56 +279,47 @@ endin
 ; output is zak channel 3
 instr 4
   adisti zar, 2
-  kdist scale, gkdist, 0.99, 0 ; make sure the power param to powershape is never 0
+  kdist scale, gkdist, 0.99, 0
   adisto powershape adisti, 1 - kdist
   zaw adisto, 3
 endin
 
-; feedback multi carrier fm
-; The modulating oscillator has feedback, amount controlled by beta and the global env
-; Two detunable carriers are modulated by the fb osc with envelopped mod index i 
-; The sum of all three oscillators are output
+; detunable osc
+instr 5
+  ii = p4 ; detune number and direction, -1, +1 etc.
+  islot = p5 ; zak slot
+  khertzdtn detune gkhertz, gkdtn, ii
+  aphasedtn, aso2 syncphasor khertzdtn, gaso1
+  avcodtn tableikt	aphasedtn, gkfn, 1, 0, 1
+  zaw (avcodtn * gioscgain), gizakvcostart + islot
+endin
+
+; osc + variable sum of other osc insts
 ; Signal path is configurable between 
 ;		oscs -> dist -> filt -> clip -> out
 ;		oscs -> filt -> dist -> clip -> out
 ; Fc can be modulated
-instr 5
-  afb init 0
-  
+instr 6
   ainl, ainr ins
-  
-  kbeta tablei	gkbeta, giexp, 1
-  kbeta =	kbeta * gibetamax
-  ; maybe think of a way to toggle env of modi
-  kmodi = 	gkmodi * gimodimax * gkenvo
-  kdtn  scale	gkdtn, 0.5, 0
-  
-  
-  khertzi cpsmidinn(int(gkmidinote))
-  if (gkport == 1) then
-    khertz portk khertzi, gkptim
-  else
-    khertz = khertzi
-  endif
-  
-  kdtndn = 1 - kdtn
-  kdtnup = 1 + (kdtn * 2)
-  khertzdn = khertz * kdtndn
-  khertzup = khertz * kdtnup
   
   asi init 0
   
-  aphase,   aso1 syncphasor khertz, asi
-  aphaseup, aso2 syncphasor khertzup, aso1 * gksync
-  aphasedn, aso3 syncphasor khertzdn, aso1 * gksync
-
-  afm	tablei aphase + (kbeta * afb),	      gisin, 1, 0, 1
-  afcup	tablei aphaseup * (1 + kmodi * afm),  gisin, 1, 0, 1
-  afcdn	tablei aphasedn * (1 + kmodi * afm),  gisin, 1, 0, 1
-
-  afb  = afm * gkenvo
-  apre = gkmix * ((afm + afcup + afcdn) / 4)
-  apre = apre + (1 - gkmix) * ainl
+  aphase, gaso1 syncphasor gkhertz, asi
+  gaso1 = gaso1 * gksync
+  avco	tableikt aphase, gkfn, 1, 0, 1
+  avco	= avco * gioscgain
+  avcomix = avco
+  
+  ; this instrument already has one vco so we count up to gknoscs - 1
+  kloop = 0
+  while (kloop < (gknoscs - 1)) do
+    amix zar gizakvcostart + kloop
+    avcomix += amix
+    kloop += 1
+  od
+  
+  abalance balance avcomix, avco 
+  apre = (gkmix * abalance) + ((1 - gkmix) * ainl)
   
   if (gkorder == 1) then
     ; filter drives distortion
@@ -311,8 +336,8 @@ instr 5
   endif
   
   aeo = aenvin * gkenvo	
-  aout clip aeo, 0, 1, 0.8 ; prevent any nonsense
-      outs aout, aout
+  aout clip aeo, 0, 1, 0.8
+    outs aout, aout
 endin
 
 
@@ -323,9 +348,22 @@ f0 z ; needed for -ve duration - i.e. hold note on
 ;	      st	   dur	   amp
 i 1     0.1    -1     
 i 3     0.1    -1     
-i 4     0.1    -1     
-i 5     0.1    -1     
-
+i 4     0.1    -1
+; 12 detune oscs
+i 5.0  0.1 -1 -1      0
+i 5.1  0.1 -1  2      1
+i 5.2  0.1 -1 -1.02   2
+i 5.3  0.1 -1  2.04   3
+i 5.4  0.1 -1 -1.03   4
+i 5.5  0.1 -1  2.06   5
+i 5.6  0.1 -1 -1.05   6
+i 5.7  0.1 -1  2.1    7
+i 5.8  0.1 -1 -1.07   8
+i 5.9  0.1 -1  2.14   9
+i 5.11 0.1 -1 -1.11  10
+i 5.12 0.1 -1  2.22  11
+; one summing osc
+i 6     0.1    -1     
 
 e
 </CsScore>
