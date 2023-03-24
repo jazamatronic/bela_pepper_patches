@@ -338,14 +338,15 @@ endin
 
 instr 3 ; subosc
   asub_on   chnget "analogIn6"
-  ksub_port port k(asub_on), giparamport
-  khertz    = cpsmidinn(int(gkmidinote) - 12)
-  asubl	    poscil ksub_port * p4 * 0.4 * gagate, khertz, gisine
-  adel	    interp gkdel
-  asubr	    vdelay asubl, adel, gimaxdel
-	    outs asubl, asubr
-endin
-
+  ksub_port port k(asub_on), giparamport                                     
+  kgate     port k(gagate), giparamport                                      
+  khertz    = cpsmidinn(int(gkmidinote) - 12)                                
+  asubl     poscil ksub_port * p4 * 0.6 * kgate, khertz, gisine              
+  adel      interp gkdel                                                     
+  asubr     vdelay asubl, adel, gimaxdel                                     
+            outs asubl, asubr                                                
+endin                                                                        
+  
 ;ftmorf!
 
 </CsInstruments>
