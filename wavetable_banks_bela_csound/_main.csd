@@ -319,10 +319,10 @@ instr 2
     gagate = 0
   endif
 
-  afc	chnget "analogIn4"
+  afc	chnget "analogIn2"
   kfce	tablei k(afc), giexp, 1
   kfce 	= kfce * gimaxfc
-  aq	chnget "analogIn5"
+  aq	chnget "analogIn3"
   kaq = k(aq) * gimaxq
   al	K35_lpf (ax * p4 * 0.6 * gagate), kfce, kaq
 	
