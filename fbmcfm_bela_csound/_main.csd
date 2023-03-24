@@ -20,12 +20,12 @@ giexp0 			= 0.001
 gimaxt 			= 5
 gibetamax		= 2
 gimodimax		= 20
-gimidimax		= 84  ; C6
-gimidimin		= 24  ; C1
 gimaxfc 		= 22050
 gimaxq 			= 10
 giparamthresh		= 0.05
 gigatethresh		= 0.1
+gimidimin		= 14
+givoct			= 118
 
 /*
  * From https://github.com/BelaPlatform/bela-pepper/wiki/Pin-numbering
@@ -113,13 +113,13 @@ instr 1
   kbtn3	    digiInBela gibtn3
 
   if (kpage == 0) then 
-    gkfcmod   toggle_button, kbtn1
-    gkorder   toggle_button, kbtn2
-    gksync    toggle_button, kbtn3
+    gkfcmod   toggle_buttonk, kbtn1
+    gkorder   toggle_buttonk, kbtn2
+    gksync    toggle_buttonk, kbtn3
   else
-    gkexp_env toggle_button, kbtn1
-    gkenv_inv toggle_button, kbtn2
-    gkport    toggle_button, kbtn3
+    gkexp_env toggle_buttonk, kbtn1
+    gkenv_inv toggle_buttonk, kbtn2
+    gkport    toggle_buttonk, kbtn3
   endif
 
   digiOutBela kpage,	  giled_page
@@ -134,7 +134,7 @@ instr 1
 ; bela CV inputs
   amidinote chnget "analogIn0"
   ;This works with my 61SL MkIII
-  gkmidinote = 14 + k(amidinote) * 120
+  gkmidinote = gimidimin + k(amidinote) * givoct
 
   akgate     chnget  "analogIn1"
   gkgate = k(akgate)
@@ -153,7 +153,7 @@ instr 1
   kcv6 = k(acv6)
   kcv7 = k(acv7)
 
-  gkfc	  locked_param kcv2, 1,	    0, kpage, giparamthresh
+  gkfc	  locked_param kcv2, 0.5,   0, kpage, giparamthresh
   gkq	  locked_param kcv3, 0,	    0, kpage, giparamthresh
   gkbeta  locked_param kcv4, 0.15,  0, kpage, giparamthresh
   gkmodi  locked_param kcv5, 0,	    0, kpage, giparamthresh
@@ -162,7 +162,7 @@ instr 1
   
   kat     locked_param kcv2, 0.1, 1, kpage, giparamthresh
   kdt     locked_param kcv3, 0.1, 1, kpage, giparamthresh
-  ksl     locked_param kcv4, 1,	  1, kpage, giparamthresh
+  ksl     locked_param kcv4, 0.8, 1, kpage, giparamthresh
   krt     locked_param kcv5, 0.1, 1, kpage, giparamthresh
   gkptim  locked_param kcv6, 0,	  1, kpage, giparamthresh
   gkmix	  locked_param kcv7, 1,	  1, kpage, giparamthresh
@@ -270,7 +270,7 @@ instr 5
   kdtn  scale	gkdtn, 0.5, 0
   
   
-  khertzi cpsmidinn(int(gkmidinote))
+  khertzi = cpsmidinn(int(gkmidinote))
   if (gkport == 1) then
     khertz portk khertzi, gkptim
   else

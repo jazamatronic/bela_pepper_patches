@@ -13,15 +13,17 @@ ksmps = 16
 nchnls = 2
 0dbfs = 1
 
-ginumwaves    = 7   ; Actually 8 but we add 1 to get upper bounds for interpolation
-giparamport   = 0.01
-gimaxdel      = 20
-gimaxmod      = 10
-gimaxbank     = 79 
-giwavetn      = 200
-gimaxfc	      = 11025 ; figure out why this can't be higher - it can in CsoundQT
-gimaxq	      = 10
-gSbank	      = "./1.wav"
+ginumwaves   = 7   ; Actually 8 but we add 1 to get upper bounds for interpolation
+giparamport  = 0.01
+gimaxdel     = 20
+gimaxmod     = 10
+gimaxbank    = 79 
+giwavetn     = 200
+gimaxfc      = 22050
+gimaxq       = 10
+gSbank       = "./1.wav"
+gimidimin    = 14
+givoct	     = 118
 
 /*
  * From https://github.com/BelaPlatform/bela-pepper/wiki/Pin-numbering
@@ -120,24 +122,7 @@ gi57 ftgen 0, 0, 256, 10, 1
 gi67 ftgen 0, 0, 256, 10, 1
 gi77 ftgen 0, 0, 256, 10, 1
 
-; simple toggle detector
-; may need to add some debounce mechanism on real hardware but seems to work 
-; on a non-latching button widget
-opcode toggle_button, k, i
-  iindex xin
-  kout init 0
-  ktoggle digiInBela iindex
-  kchanged changed ktoggle
-  kriseedge = kchanged * ktoggle
-  if (kriseedge == 1) then
-    if (kout == 0) then
-    	kout = 1
-    else
-    	kout = 0
-    endif
-  endif
-  xout kout
-endop
+#include "../udos/pages_buttons_params.udo"
 
 instr 1
 
@@ -255,7 +240,7 @@ instr 2
   amidinote chnget "analogIn0"
   ;gkmidinote scale kmidinote, gimidimax, gimidimin
   ;This works with my 61SL MkIII
-  gkmidinote = 14 + k(amidinote) * 120
+  gkmidinote = gimidimin + k(amidinote) * givoct
   khertz = cpsmidinn(int(gkmidinote))
   
   kmin = 165
@@ -268,13 +253,13 @@ instr 2
   aphase phasor khertz
   
   if (kxy_mode == 1) then
-    amorphx	chnget "analogIn2"       ;wave osc selection
+    amorphx	chnget "analogIn4"       ;wave osc selection
     kmorphxmp 	port k(amorphx), giparamport
     kmorphxmps	= kmorphxmp * ginumwaves
     kmorphxt	= int(kmorphxmps)
     kmorphxf 	= frac(kmorphxmps - kmorphxt)
         
-    amorphy	chnget "analogIn3"       ;wave osc selection
+    amorphy	chnget "analogIn5"       ;wave osc selection
     kmorphymp	port k(amorphy), giparamport
     kmorphymps	= kmorphymp * ginumwaves
     kmorphyt	= int(kmorphymps)
@@ -297,10 +282,11 @@ instr 2
     axu   = ((1 - kmorphxf) * axul + kmorphxf * axur)
     ax    = ((1 - kmorphyf) * axl  + kmorphyf * axu)
   else
-    amorphz   chnget "analogIn2"
+    amorphz   chnget "analogIn4"
     kmorphzmp port k(amorphz), giparamport
 
-    amodz chnget "analogIn3"
+    amodz chnget "analogIn5"
+    ;kmodz = k(amodz)
     kmodz port k(amodz), giparamport
       
     if (kmodz < 0.05) then 
@@ -328,6 +314,10 @@ instr 2
   endif
 
   gagate chnget "analogIn1"
+  gkgate = k(gagate)
+  if (gkgate < 0.05) then
+    gagate = 0
+  endif
 
   afc	chnget "analogIn4"
   kfce	tablei k(afc), giexp, 1

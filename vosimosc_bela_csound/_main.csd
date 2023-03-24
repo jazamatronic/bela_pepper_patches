@@ -11,12 +11,13 @@ nchnls = 2
 
 giexp0 		= 0.001
 gimaxt 		= 5
-gimidimax	= 134 ; 84  ; C6
-gimidimin	= 24  ; C1
 giparamport 	= 0.1
 giparamthresh	= 0.01
 givosimamp	= 0.233
 gigatethresh	= 0.1
+gimidimin	= 14
+givoct		= 118
+gimidimax	= 127
 
 gibtn0 = 15
 gibtn1 = 14
@@ -37,7 +38,7 @@ giled_id2     = 4
 ; exponential for ADSR controls
 giexp  ftgen 0, 0, 256, 5, giexp0, 256, 1, 0
 
-#include "./udos/pages_buttons_params.udo"
+#include "../udos/pages_buttons_params.udo"
 
 ;#################################################
 ; By Rasmus Ekman 2008
@@ -78,19 +79,27 @@ instr 1
   kbtn3	    digiInBela gibtn3
 
   if (kpage == 0) then 
-    gkfmod    toggle_button, kbtn1
-    gkpcmod   toggle_button, kbtn2
-    gkpfmod   toggle_button, kbtn3
+    gkfmod    toggle_buttonk, kbtn1
+    gkpcmod   toggle_buttonk, kbtn2
+    gkpfmod   toggle_buttonk, kbtn3
   else
-    gkexp_env toggle_button, kbtn1
-    gkenv_inv toggle_button, kbtn2
-    gkport    toggle_button, kbtn3
+    gkexp_env toggle_buttonk, kbtn1
+    gkenv_inv toggle_buttonk, kbtn2
+    gkport    toggle_buttonk, kbtn3
   endif
+
+  digiOutBela kpage,	  giled_page
+  digiOutBela gkfmod,	  giled_fmod  
+  digiOutBela gkpcmod, 	  giled_fpcmod  
+  digiOutBela gkpfmod,    giled_fpfmod  
+  digiOutBela gkexp_env,  giled_exp_env
+  digiOutBela gkenv_inv,  giled_env_inv
+  digiOutBela gkport,     giled_port   
 
 ; bela CV inputs
   amidinote chnget "analogIn0"
   ;This works with my 61SL MkIII
-  kmidinote = 14 + k(amidinote) * 120
+  gkmidinote = gimidimin + k(amidinote) * givoct
 
   akgate    chnget  "analogIn1"
   gkgate = k(akgate)
@@ -118,12 +127,12 @@ instr 1
 
   kat     locked_param kcv2, 0.1, 1, kpage, giparamthresh
   kdt     locked_param kcv3, 0.1, 1, kpage, giparamthresh
-  ksl     locked_param kcv4, 1,	  1, kpage, giparamthresh
+  ksl     locked_param kcv4, 0.8, 1, kpage, giparamthresh
   krt     locked_param kcv5, 0.1, 1, kpage, giparamthresh
   gkptim  locked_param kcv6, 0,	  1, kpage, giparamthresh
   gkmix	  locked_param kcv7, 1,	  1, kpage, giparamthresh
 	  
-  khertzi = cpsmidinn(int(kmidinote))
+  khertzi = cpsmidinn(int(gkmidinote))
   if (gkport == 1) then
     gkhertz portk khertzi, gkptim
   else
@@ -173,11 +182,9 @@ instr 1
   gkdtn  scale kdtn, 0.5, 0
   
   if (gkfmod == 1) then
-    ;kformnote scale (kform * gkenvo), gimidimax + 12, kmidinote
-    kformnote scale (kform * gkenvo), gimidimax, kmidinote
+    kformnote scale (kform * gkenvo), gimidimax, gkmidinote
   else
-    ;kformnote scale kform, gimidimax + 12, kmidinote
-    kformnote scale kform, gimidimax, kmidinote
+    kformnote scale kform, gimidimax, gkmidinote
   endif
   kformh = cpsmidinn(int(kformnote))
   gkformhp port kformh, giparamport

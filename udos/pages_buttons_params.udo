@@ -49,11 +49,31 @@ opcode locked_param, k, kiiki
 endop
 
 ; outputs:	k = a variable that toggles between zero and one on each rising edge of the input
+; intputs:	i = switch signal that's either zero or one, like from a momentary switch
+; simple toggle detector
+; may need to add some debounce mechanism on real hardware but seems to work 
+; on a non-latching button widget
+opcode toggle_button, k, i
+  iindex xin
+  kout init 0
+  ktoggle digiInBela iindex
+  kchanged changed ktoggle
+  if (kchanged == 1 && ktoggle == 1) then
+    if (kout == 0) then
+    	kout = 1
+    else
+    	kout = 0
+    endif
+  endif
+  xout kout
+endop
+
+; outputs:	k = a variable that toggles between zero and one on each rising edge of the input
 ; intputs:	k = switch signal that's either zero or one, like from a momentary switch
 ; simple toggle detector
 ; may need to add some debounce mechanism on real hardware but seems to work 
 ; on a non-latching button widget
-opcode toggle_button, k, k
+opcode toggle_buttonk, k, k
   ktoggle xin
   kout init 0
   kchanged changed ktoggle

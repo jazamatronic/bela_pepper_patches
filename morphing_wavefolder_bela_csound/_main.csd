@@ -3,7 +3,9 @@
 -m0d
 </CsOptions>
 <CsInstruments>
-ksmps = 8
+
+sr = 44100
+ksmps = 16 
 nchnls = 2
 0dbfs = 1
 ;starting from the gen13.csd example by Russell Pinkston - Univ. of Texas  
@@ -34,8 +36,8 @@ gidriftfreq1 = 0.3
 gidriftfreq2 = 0.31
 gidriftfreq3 = 0.29
 gimaxdrift   = 1/24
-gimidimax    = 84  ; C6
-gimidimin    = 24  ; C1
+gimidimin    = 14
+givoct	     = 118
 
 /*
  * From https://github.com/BelaPlatform/bela-pepper/wiki/Pin-numbering
@@ -92,7 +94,7 @@ instr   1
   
   amidinote chnget "analogIn0"
   ;This works with my 61SL MkIII
-  gkmidinote = 14 + k(amidinote) * 120
+  gkmidinote = gimidimin + k(amidinote) * givoct
   khertz = cpsmidinn(int(gkmidinote))
 
   ipkamp = p4/3
@@ -103,6 +105,10 @@ instr   1
   	gagate = 1
   else
   	gagate chnget "analogIn1"
+	gkgate = k(gagate)
+	if (gkgate < 0.05) then
+	  gagate = 0
+	endif
   endif
   
   actrl chnget "analogIn2"              ;waveshaping index control
