@@ -4,7 +4,8 @@ A [Csound](https://csound.com) implementation of a wavetable synth for [Bela Pep
 
 Heavily inspired by Synthesis Technology's [WaveEdit](https://github.com/AndrewBelt/WaveEdit) .  The Wavetable format is the same as WaveEdit, in fact you can use the tables supplied with it directly in this implementation .
 
-I've not included any banks here but you can find a lot of them on the web - start with Adventure Kid's [AKWF](https://github.com/KristofferKarlAxelEkstrand/AKWF-FREE/tree/master/AKWF--Synthesis-Technology/Wavetables) tables .  Put them in the same directory as _main.csd and rename them sequentially starting from 1.wav.  Be sure to adjust ```gimaxbank``` parameter accordingly .  
+I've not included any banks here but you can find a lot of them on the web - start with Adventure Kid's [AKWF](https://github.com/KristofferKarlAxelEkstrand/AKWF-FREE/tree/master/AKWF--Synthesis-Technology/Wavetables) tables .  
+Put them in the same directory as \_main.csd and rename them sequentially starting from 1.wav.  Be sure to adjust ```gimaxbank``` parameter accordingly .  
 
 Analog Inputs:  
   0. V/Oct - quantized to midi notes
