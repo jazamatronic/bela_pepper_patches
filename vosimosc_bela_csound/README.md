@@ -43,3 +43,6 @@ Buttons page 1:
   2. Invert the envelope
   3. Portamento enable
 
+Controls:  
+
+![controls](https://github.com/jazamatronic/bela_pepper_patches/blob/main/vosimosc_bela_csound/vosimosc.png)
