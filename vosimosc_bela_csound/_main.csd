@@ -59,6 +59,27 @@ endin
 
 ;#################################################
 
+; multi pages
+;
+; Inputs zero and one on all pages - the V/Oct and Gate
+;
+; Page zero:
+;   two:  Formant	three: Decay
+;   four: pulse count	five:  pulse factor
+;   six:  dtn		seven: dist
+;   
+;   Buttons:
+;     fmod pcmod pfmod
+;   
+; Page one:
+;   two:  A	  three: D
+;   four: S	  five:  R
+;   six:  port	  seven: mix
+;   
+;   Buttons:
+;     exp_env env_inv portamento
+
+
 instr 1
 
   digiOutBela 0, giled_id0
