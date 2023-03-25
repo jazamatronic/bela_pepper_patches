@@ -43,3 +43,6 @@ Buttons page 1:
   2. Invert the envelope
   3. Portamento enable
 
+Controls:  
+
+![controls](https://github.com/jazamatronic/bela_pepper_patches/blob/main/superosc_bela_csound/superosc.png)
