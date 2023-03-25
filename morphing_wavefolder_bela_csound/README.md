@@ -22,3 +22,7 @@ Buttons:
   1. Lock Osc Phase (resets detune/drift)
   2. Drone
   3. Invert the R output phase
+
+Controls:  
+
+![controls](https://github.com/jazamatronic/bela_pepper_patches/blob/main/morphing_wavefolder_bela_csound/morphing_wavefolder.png)
