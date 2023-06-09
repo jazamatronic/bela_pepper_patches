@@ -314,8 +314,10 @@ instr 5
   astim = anoise * gkmix + (1 - gkmix) * ainl
   aenvstim = astim * gkenvo
   affcomb ff_comb aenvstim, kdel1, 1, -1, gimaxdel
-  adcblock dcblock2 (affcomb + afb)
-  adamp damp_filter adcblock, kdamp
+  ; the pitch to delay time calc goes out of whack when the dcblock2 filter is used
+  ;adcblock dcblock2 (affcomb + afb)
+  ;adamp damp_filter adcblock, kdamp
+  adamp damp_filter (affcomb + afb), kdamp
   adel	delayr gimaxdel
   adelo deltapi kdel
   delayw adamp
