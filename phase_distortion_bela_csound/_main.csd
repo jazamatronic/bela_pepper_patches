@@ -25,7 +25,7 @@ gimaxq 			= 10
 giparamport 		= 0.01
 giparamthresh		= 0.05
 gigatethresh		= 0.1
-gimidimin		= 14
+gimidimin		= 15
 givoct			= 118
 ginumtabs = 12
 

@@ -15,7 +15,7 @@ giparamport 	= 0.1
 giparamthresh	= 0.01
 givosimamp	= 0.233
 gigatethresh	= 0.1
-gimidimin	= 14
+gimidimin	= 15
 givoct		= 118
 gimidimax	= 127
 

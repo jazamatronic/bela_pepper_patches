@@ -36,7 +36,7 @@ gidriftfreq1 = 0.3
 gidriftfreq2 = 0.31
 gidriftfreq3 = 0.29
 gimaxdrift   = 1/24
-gimidimin    = 14
+gimidimin    = 15
 givoct	     = 118
 
 /*

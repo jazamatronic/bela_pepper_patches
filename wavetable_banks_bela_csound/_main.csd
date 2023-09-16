@@ -22,7 +22,7 @@ giwavetn     = 200
 gimaxfc      = 22050
 gimaxq       = 10
 gSbank       = "./1.wav"
-gimidimin    = 14
+gimidimin    = 15
 givoct	     = 118
 
 /*

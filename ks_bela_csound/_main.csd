@@ -23,7 +23,7 @@ gimaxq 		= 10
 giparamthresh	= 0.01
 gimaxdel	= 2048 / sr
 gigatethresh	= 0.1
-gimidimin	= 14
+gimidimin	= 15
 givoct		= 118
 
 /*

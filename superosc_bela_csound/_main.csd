@@ -26,7 +26,7 @@ giparamthresh	= 0.05
 gizakvcostart	= 4
 gioscgain	= 0.7
 gigatethresh	= 0.1
-gimidimin	= 14
+gimidimin	= 15
 givoct		= 118
 
 /*
