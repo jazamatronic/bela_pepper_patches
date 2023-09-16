@@ -181,7 +181,7 @@ instr 1
   gkmix	  locked_param kcv7, 1,	  1, kpage, giparamthresh
 	  
   gkpdamt portk kpdamt * 2 - 1, giparamport
-  gktab = int(ktab * (ginumtabs - 0.5))
+  gktab = int(ktab * (ginumtabs - 0.4))
   
   ktrig trigger gkgate, gigatethresh, 2 ; triggers on both edges
   if (ktrig == 1) then
