@@ -199,11 +199,13 @@ instr 1
   else
     gkenvo = gkenv
   endif
+  ; pass the envelope through a filter to turn it into an audio rate signal and avoid zipper noise
+  gaenvo tone a(gkenvo), 500
 
   gkdtn  scale kdtn, 0.5, 0
   
   if (gkfmod == 1) then
-    kformnote scale (kform * gkenvo), gimidimax, gkmidinote
+    kformnote scale (kform * gaenvo), gimidimax, gkmidinote
   else
     kformnote scale kform, gimidimax, gkmidinote
   endif
@@ -219,13 +221,13 @@ instr 1
   gkdecay scale kdecay, kmaxscale, 0
   
   if (gkpcmod == 1) then
-    kpc = kpc * gkenvo
+    kpc = kpc * gaenvo
   endif
   kpcs scale kpc, kmaxcnt, 1
   gkpcp port kpcs, giparamport
   
   if (gkpfmod == 1) then
-    kpf = kpf * gkenvo
+    kpf = kpf * gaenvo
   endif
   kpfs scale, kpf, 2, 0.1
   gkpfp port kpfs, giparamport
@@ -274,7 +276,7 @@ instr 5
   adisti = gkmix * (al + aldn + alup) + (1 - gkmix) * ainl
   ;adcblock dcblock2 adisti
   ;adisti = adcblock * gkenvo
-  adisti = adisti * gkenvo
+  adisti = adisti * gaenvo
   kdist scale, gkdist, 0.99, 0
   adisto powershape adisti, 1 - kdist
   aout clip adisto, 0, 1, 0.8

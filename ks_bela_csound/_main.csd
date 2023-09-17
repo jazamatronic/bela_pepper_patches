@@ -240,6 +240,8 @@ instr 1
   else
     gkenvo = gkenv
   endif
+  ; pass the envelope through a filter to turn it into an audio rate signal and avoid zipper noise
+  gaenvo tone a(gkenvo), 500
 endin
 
 ; adsr gen
@@ -265,7 +267,7 @@ instr 3
   if (gkfcmod == 1) then
     ; due to the string model we can't close the filter or it doesn't ring
     ; so let's do it slightly differently
-    kfce = kfce + (gimaxfc - kfce) * gkenvo
+    kfce = kfce + (gimaxfc - kfce) * gaenvo
   endif
   
   kq = gkq * gimaxq
@@ -312,7 +314,7 @@ instr 5
   
   anoise rand 0.7
   astim = anoise * gkmix + (1 - gkmix) * ainl
-  aenvstim = astim * gkenvo
+  aenvstim = astim * gaenvo
   affcomb ff_comb aenvstim, kdel1, 1, -1, gimaxdel
   ; the pitch to delay time calc goes out of whack when the dcblock2 filter is used
   ;adcblock dcblock2 (affcomb + afb)

@@ -206,7 +206,9 @@ instr 1
     gkenvo = 1 - gkenv
   else
     gkenvo = gkenv
-	endif
+  endif
+  ; pass the envelope through a filter to turn it into an audio rate signal and avoid zipper noise
+  gaenvo tone a(gkenvo), 500
 endin
 
 ; adsr gen
@@ -230,7 +232,7 @@ instr 3
   kfce tablei gkfc, giexp, 1
   kfce = kfce * gimaxfc
   if (gkfcmod == 1) then
-    kfce = kfce * gkenvo
+    kfce = kfce * gaenvo
   endif
   
   kq = gkq * gimaxq
@@ -266,7 +268,7 @@ instr 5
   kbeta tablei	gkbeta, giexp, 1
   kbeta =	kbeta * gibetamax
   ; maybe think of a way to toggle env of modi
-  kmodi = 	gkmodi * gimodimax * gkenvo
+  kmodi = 	gkmodi * gimodimax * gaenvo
   kdtn  scale	gkdtn, 0.5, 0
   
   
@@ -292,7 +294,7 @@ instr 5
   afcup	tablei aphaseup * (1 + kmodi * afm),  gisin, 1, 0, 1
   afcdn	tablei aphasedn * (1 + kmodi * afm),  gisin, 1, 0, 1
 
-  afb  = afm * gkenvo
+  afb  = afm * gaenvo
   apre = gkmix * ((afm + afcup + afcdn) / 4)
   apre = apre + (1 - gkmix) * ainl
   
@@ -310,7 +312,7 @@ instr 5
     aenvin zar, 1
   endif
   
-  aeo = aenvin * gkenvo	
+  aeo = aenvin * gaenvo	
   aout clip aeo, 0, 1, 0.8 ; prevent any nonsense
       outs aout, aout
 endin

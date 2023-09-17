@@ -249,6 +249,8 @@ instr 1
   else
     gkenvo = gkenv
   endif
+  ; pass the envelope through a filter to turn it into an audio rate signal and avoid zipper noise
+  gaenvo tone a(gkenvo), 500
 endin
 
 ; adsr gen
@@ -272,7 +274,7 @@ instr 3
   kfce	tablei gkfc, giexp, 1
   kfce	= kfce * gimaxfc
   if (gkfcmod == 1) then
-  	kfce = kfce * gkenvo
+  	kfce = kfce * gaenvo
   endif
   
   kq = gkq * gimaxq
@@ -343,7 +345,7 @@ instr 6
     aenvin zar, 1
   endif
   
-  aeo = aenvin * gkenvo	
+  aeo = aenvin * gaenvo	
   aout clip aeo, 0, 1, 0.8
     outs aout, aout
 endin
