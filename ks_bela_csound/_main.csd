@@ -73,14 +73,16 @@ endop
 opcode hertz_to_del, k, k
   khz xin
   knumsamps = sr / khz
-  kadj = knumsamps - 0.5
-    xout kadj / sr
+  ; I don't know why ksmps is needed?
+  kadj = knumsamps - ksmps + 0.5
+  xout kadj
+  ;xout kadj / sr
 endop
 
 opcode ff_comb, a, akkki
   ain, kdel, kb0, kbm, imaxdel xin
   ad delayr imaxdel
-  adel deltapi kdel
+  adel deltapn kdel
   delayw ain
     xout ain * kb0 + adel * kbm
 endop
@@ -265,9 +267,9 @@ instr 3
   kfce	tablei gkfc, giexp, 1
   kfce	= kfce * gimaxfc
   if (gkfcmod == 1) then
-    ; due to the string model we can't close the filter or it doesn't ring
-    ; so let's do it slightly differently
-    kfce = kfce + (gimaxfc - kfce) * gaenvo
+  ; due to the string model we can't close the filter or it doesn't ring
+  ; so let's do it slightly differently
+  kfce = kfce + (gimaxfc - kfce) * gaenvo
   endif
   
   kq = gkq * gimaxq
@@ -289,6 +291,8 @@ endin
 
 ; Karplus-Strong plucked string
 ;
+; TODO: look into pluck opcode
+;
 ; A user configurable mix of left input and noise is enveloped and fed into
 ; a feed-forward comb filter.
 ; The output of the comb filter is then combined with the feedback signal and
@@ -303,8 +307,10 @@ instr 5
   afb init 0
   
   kdel hertz_to_del gkhertz
-  kdel1 scale gkdel1, kdel / 2, giexp0
-  kdamp scale gkdamp, 0.5, 0
+
+  kdel1 scale gkdel1, kdel, giexp0
+
+  kdamp scale gkdamp, 1, 0.5
   kg scale gkg, 1.0, 0.5
   if (gkinvg == 1) then
     kg = 0 - kg
@@ -321,7 +327,7 @@ instr 5
   ;adamp damp_filter adcblock, kdamp
   adamp damp_filter (affcomb + afb), kdamp
   adel	delayr gimaxdel
-  adelo deltapi kdel
+  adelo deltapn kdel
   delayw adamp
   afb = adelo * kg
   
