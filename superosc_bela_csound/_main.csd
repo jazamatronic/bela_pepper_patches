@@ -65,8 +65,10 @@ gaso1 init 0 ; global sync
 
 ; exponential for ADSR controls
 giexp  ftgen	0, 0, 256, 5, giexp0, 256, 1, 0
+;a rising sigmoid for detune
+gisig ftgen 0, 0, 256, 19, 0.5, 0.5, 270, 0.5
 
-givcotable_start vco2init 31, giexp+1, 0, 128, 2^16
+givcotable_start vco2init 31, gisig+1, 0, 128, 2^16
 
 #include "../udos/pages_buttons_params.udo"
 
@@ -208,7 +210,9 @@ instr 1
   gknoscs scale knoscs, gimaxoscs, 1
   gknoscs = int(gknoscs)
   
-  gkdtn  scale kdtn, 0.5, 0
+  kdtns  tablei kdtn, gisig, 1
+  gkdtn  scale kdtns, 0.5, 0
+  ;gkdtn  scale kdtn, 0.5, 0
 		  
   ktrig trigger gkgate, gigatethresh, 2
   if (ktrig == 1) then

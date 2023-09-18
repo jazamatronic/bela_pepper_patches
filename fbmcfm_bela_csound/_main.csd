@@ -63,6 +63,9 @@ giled_id2 = 4
 gisin ftgen 0, 0, 4096, 10, 1
 ; exponential for ADSR controls
 giexp ftgen 0, 0, 256, 5, giexp0, 256, 1, 0
+;a rising sigmoid for detune
+gisig ftgen 0, 0, 256, 19, 0.5, 0.5, 270, 0.5
+
 
 #include "../udos/pages_buttons_params.udo"
 
@@ -269,7 +272,9 @@ instr 5
   kbeta =	kbeta * gibetamax
   ; maybe think of a way to toggle env of modi
   kmodi = 	gkmodi * gimodimax * gaenvo
-  kdtn  scale	gkdtn, 0.5, 0
+  kdtns  tablei gkdtn, gisig, 1
+  kdtn  scale kdtns, 0.5, 0
+  ;kdtn  scale	gkdtn, 0.5, 0
   
   
   khertzi = cpsmidinn(int(gkmidinote))

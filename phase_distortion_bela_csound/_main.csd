@@ -76,6 +76,9 @@ gidhlfev  ftgen 0, 0, 4096, 18, gisin, 1, 0, 2047, giev, 1, 2048, 4095 ; half si
 gidhlfcsp ftgen 0, 0, 4096, 18, gisin, 1, 0, 2047, gicsp, 1, 2048, 4095 ; half sine + cosine partials
 ; exponential for ADSR controls
 giexp ftgen 0, 0, 256, 5, giexp0, 256, 1, 0
+;a rising sigmoid for detune
+gisig ftgen 0, 0, 256, 19, 0.5, 0.5, 270, 0.5
+
 
 #include "../udos/pages_buttons_params.udo"
 
@@ -274,7 +277,9 @@ endin
 instr 5
   ainl, ainr ins
   
-  kdtn  scale gkdtn, 0.5, 0
+  kdtns  tablei gkdtn, gisig, 1
+  kdtn  scale kdtns, 0.5, 0
+  ;kdtn  scale gkdtn, 0.5, 0
   
 
   khertzi = cpsmidinn(int(gkmidinote))

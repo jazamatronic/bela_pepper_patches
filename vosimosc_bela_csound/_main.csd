@@ -202,7 +202,9 @@ instr 1
   ; pass the envelope through a filter to turn it into an audio rate signal and avoid zipper noise
   gaenvo tone a(gkenvo), 500
 
-  gkdtn  scale kdtn, 0.5, 0
+  kdtns  tablei kdtn, gisig, 1
+  gkdtn  scale kdtns, 0.5, 0
+  ;gkdtn  scale kdtn, 0.5, 0
   
   if (gkfmod == 1) then
     kformnote scale (kform * gaenvo), gimidimax, gkmidinote
