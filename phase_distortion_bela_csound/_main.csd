@@ -67,13 +67,21 @@ gisinf	  ftgen	0, 0, 4096, 10, 1 ; sine
 gisquare  ftgen	0, 0, 4096, 10, 1, 0 , .33, 0, .2 , 0, .14, 0 , .11, 0, .09 ;odd harmonics
 gisaw	  ftgen 0, 0, 4096, 10, 1, 0.5, 0.3, 0.25, 0.2, 0.167, 0.14, 0.125, .111  ;sawtooth
 giev	  ftgen 0, 0, 4096, 10, 0, .2, 0, .4, 0, .6, 0, .8, 0, 1, 0, .8, 0, .6, 0, .4, 0,.2 ;even harmonics
-gicsp	  ftgen 0, 0, 4096, 11, 10, 5, 2 ;cosine partials
+;gicsp 	ftgen 0, 0, 4096, 11, 10, 5, 2 ;cosine partials - use sine version below to avoid clicking due to discontinuities
+gicsp 	ftgen 0, 0, 4096, 10, 0, 0, 0, 0, 0, 1, 2, 4, 8, 16  ;sine partials
 gidblhlf  ftgen 0, 0, 4096, 18, gisin, 1, 0, 2047, gisin, 1, 2048, 4095 ; double half sine
 gidhlfsin ftgen 0, 0, 4096, 18, gisin, 1, 0, 2047, gisinf, 1, 2048, 4095 ; half sine + sine
 gidhlfsq  ftgen 0, 0, 4096, 18, gisin, 1, 0, 2047, gisquare, 1, 2048, 4095 ; half sine + square
 gidhlfsaw ftgen 0, 0, 4096, 18, gisin, 1, 0, 2047, gisaw, 1, 2048, 4095 ; half sine + saw
 gidhlfev  ftgen 0, 0, 4096, 18, gisin, 1, 0, 2047, giev, 1, 2048, 4095 ; half sine + even harms
 gidhlfcsp ftgen 0, 0, 4096, 18, gisin, 1, 0, 2047, gicsp, 1, 2048, 4095 ; half sine + cosine partials
+
+; index for ftmorf
+gimorphtfn ftgen 0, 0, ginumtabs, -2, gisin, gisinf, gisquare, gisaw, giev, gicsp, gidblhlf, gidhlfsin, gidhlfsq, gidhlfsaw, gidhlfev, gidhlfcsp
+
+; ftmorf destination - doesn't matter what the contents are
+gimorphsfn ftgen 0, 0, 4096, 10, 1 
+
 ; exponential for ADSR controls
 giexp ftgen 0, 0, 256, 5, giexp0, 256, 1, 0
 ;a rising sigmoid for detune
@@ -184,7 +192,7 @@ instr 1
   gkmix	  locked_param kcv7, 1,	  1, kpage, giparamthresh
 	  
   gkpdamt portk kpdamt * 2 - 1, giparamport
-  gktab = int(ktab * (ginumtabs - 0.4))
+  gktab portk ktab * (ginumtabs - 1), giparamport
   
   ktrig trigger gkgate, gigatethresh, 2 ; triggers on both edges
   if (ktrig == 1) then
@@ -226,7 +234,8 @@ instr 1
     gkenvo = gkenv
   endif
   ; pass the envelope through a filter to turn it into an audio rate signal and avoid zipper noise
-  gaenvo tone a(gkenvo), 500
+  ;gaenvo tone a(gkenvo), 500
+  gaenvo interp gkenvo
 endin
 
 ; adsr gen
@@ -301,18 +310,19 @@ instr 5
   aphasedn, aso3 syncphasor khertzdn, aso1 * gksync
 
   if (gkstyle == 1) then
-    apdphase 	pdhalfy	aphase, gkpdamt
+    apdphase 	pdhalfy	aphase,	  gkpdamt
     apdphaseup 	pdhalfy	aphaseup, gkpdamt
     apdphasedn 	pdhalfy	aphasedn, gkpdamt
   else
-    apdphase 	pdhalf 	aphase, gkpdamt
+    apdphase 	pdhalf 	aphase,	  gkpdamt
     apdphaseup 	pdhalf 	aphaseup, gkpdamt
     apdphasedn 	pdhalf 	aphasedn, gkpdamt
   endif
 	
-  apd	tableikt  apdphase,   gisin + gktab, 1, 0, 1
-  apdup	tableikt  apdphaseup, gisin + gktab, 1, 0, 1
-  apddn	tableikt  apdphasedn, gisin + gktab, 1, 0, 1
+  ftmorf gktab, gimorphtfn, gimorphsfn
+  apd	tablei  apdphase,   gimorphsfn, 1, 0, 1
+  apdup	tablei  apdphaseup, gimorphsfn, 1, 0, 1
+  apddn	tablei  apdphasedn, gimorphsfn, 1, 0, 1
   apre = gkmix * ((apd + apdup + apddn) / 5)
   apre = apre + (1 - gkmix) * ainl
   
