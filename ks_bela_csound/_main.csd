@@ -267,9 +267,9 @@ instr 3
   kfce	tablei gkfc, giexp, 1
   kfce	= kfce * gimaxfc
   if (gkfcmod == 1) then
-  ; due to the string model we can't close the filter or it doesn't ring
-  ; so let's do it slightly differently
-  kfce = kfce + (gimaxfc - kfce) * gaenvo
+    ; due to the string model we can't close the filter or it doesn't ring
+    ; so let's do it slightly differently
+    kfce = kfce + (gimaxfc - kfce) * gaenvo
   endif
   
   kq = gkq * gimaxq
