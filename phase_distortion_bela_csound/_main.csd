@@ -68,7 +68,7 @@ gisquare  ftgen	0, 0, 4096, 10, 1, 0 , .33, 0, .2 , 0, .14, 0 , .11, 0, .09 ;odd
 gisaw	  ftgen 0, 0, 4096, 10, 1, 0.5, 0.3, 0.25, 0.2, 0.167, 0.14, 0.125, .111  ;sawtooth
 giev	  ftgen 0, 0, 4096, 10, 0, .2, 0, .4, 0, .6, 0, .8, 0, 1, 0, .8, 0, .6, 0, .4, 0,.2 ;even harmonics
 ;gicsp 	ftgen 0, 0, 4096, 11, 10, 5, 2 ;cosine partials - use sine version below to avoid clicking due to discontinuities
-gicsp 	ftgen 0, 0, 4096, 10, 0, 0, 0, 0, 0, 1, 2, 4, 8, 16  ;sine partials
+gicsp	  ftgen 0, 0, 4096, 10, 0, 0, 0, 0, 0, 1, 2, 4, 8, 16  ;sine partials
 gidblhlf  ftgen 0, 0, 4096, 18, gisin, 1, 0, 2047, gisin, 1, 2048, 4095 ; double half sine
 gidhlfsin ftgen 0, 0, 4096, 18, gisin, 1, 0, 2047, gisinf, 1, 2048, 4095 ; half sine + sine
 gidhlfsq  ftgen 0, 0, 4096, 18, gisin, 1, 0, 2047, gisquare, 1, 2048, 4095 ; half sine + square
@@ -342,7 +342,7 @@ endin
 <CsScore>
 f0 z ; needed for -ve duration - i.e. hold note on
 
-;	      st	   dur	   amp
+;	st	dur
 i 1     0.1    -1     
 i 3     0.1    -1     
 i 4     0.1    -1     

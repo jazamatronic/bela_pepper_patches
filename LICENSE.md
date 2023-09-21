@@ -23,3 +23,6 @@ SOFTWARE.
 
 Faceplate Graphic: 
 Originally taken from [BelaPlatform/bela-pepper](https://github.com/BelaPlatform/bela-pepper/blob/master/Design%20Files/renders/Faceplate/pepper_faceplate_rev2.pdf) [CC-BY-SA](https://creativecommons.org/licenses/by-sa/3.0/)
+
+drumkit\_bela\_csound uses Attribution-NonCommercial-ShareAlike 4.0 International
+
