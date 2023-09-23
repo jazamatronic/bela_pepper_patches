@@ -68,6 +68,7 @@ gicos	ftgen 0, 0, 4096, 9, 1, 1, 90
 
 ginextfree vco2init 8; do it here so it doesn't cause trouble with the instruments?
  
+; try and avoid overloading Bela by only allowing a single instance of each instrument
 prealloc 2, 1
 prealloc 3, 1
 prealloc 4, 1
@@ -81,22 +82,44 @@ maxalloc 5, 1
 #include "../udos/pages_buttons_params.udo"
 
 ; multi pages
-;
-; Inputs zero and one are triggers for BD and SN on both pages
+
+; Buttons:
+;   1. Page
+;   2. Pan (Center or BD L, SN R)
+;   3. On performance page adjust distortion
+;   4. Trigger voice 
 ;
 ; Page zero Kick params:
 ;   two: Decay	three: Tuning
 ;   four: Bend	five: Attack and Body mix
 ;   six: Vol 	seven: Distortion
 ;
-;   Buttons:
-;     Pan (Center or BD L, SN R)
-;   
 ; Page one Snare params:
 ;   two: Decay	three: Tuning
 ;   four: Bend	five: Noise and Body mix
 ;   six: Vol 	seven: Distortion
+;
+; Page two Open Hi Hat params:
+;   two: Decay	three: Tuning
+;   four: OscPW five: Noise and Body mix
+;   six: Vol 	seven: Distortion
 ;   
+; Page three Closed Hi Hat params:
+;   two: Decay	three: Tuning
+;   four: OscPW	five: Noise and Body mix
+;   six: Vol 	seven: Distortion
+;   
+; Page four performance
+;   zero: BD trig one: SN trig
+;   two:  OH trig three: CH trig
+;   four: BD Dec  five: SN Dec
+;   six:  OH Dec  seven: CH Dec
+;
+; or with btn 3 depressed
+;
+;   four: BD Dist  five: SN Dist
+;   six:  OH Dist  seven: CH Dist
+;
 ;
 ; IO trigger
 instr 1
@@ -161,14 +184,14 @@ instr 1
   kvol2	    locked_param kcv6, 0.75,  1, kpage, giparamthresh
   kdistp2   locked_param kcv7, 0,     1, kpage, giparamthresh
 
-  kdecp3    locked_param kcv2, 0.75,  2, kpage, giparamthresh
+  kdecp3    locked_param kcv2, 0.25,  2, kpage, giparamthresh
   gktune3   locked_param kcv3, 0.25,  2, kpage, giparamthresh
   gkpw3	    locked_param kcv4, 0.5,   2, kpage, giparamthresh
   gkmix3    locked_param kcv5, 0.5,   2, kpage, giparamthresh
   kvol3	    locked_param kcv6, 0.75,  2, kpage, giparamthresh
   kdistp3   locked_param kcv7, 0,     2, kpage, giparamthresh
 
-  kdecp4    locked_param kcv2, 0.75,  3, kpage, giparamthresh
+  kdecp4    locked_param kcv2, 0.25,  3, kpage, giparamthresh
   gktune4   locked_param kcv3, 0.25,  3, kpage, giparamthresh
   gkpw4	    locked_param kcv4, 0.5,   3, kpage, giparamthresh
   gkmix4    locked_param kcv5, 0.5,   3, kpage, giparamthresh
@@ -177,8 +200,8 @@ instr 1
   
   kdeca1    locked_param kcv4, 0.75,  4, kpage, giparamthresh
   kdeca2    locked_param kcv5, 0.75,  4, kpage, giparamthresh
-  kdeca3    locked_param kcv6, 0.75,  4, kpage, giparamthresh
-  kdeca4    locked_param kcv7, 0.75,  4, kpage, giparamthresh
+  kdeca3    locked_param kcv6, 0.25,  4, kpage, giparamthresh
+  kdeca4    locked_param kcv7, 0.25,  4, kpage, giparamthresh
 
   kdista1   locked_param kcv4, 0,     5, kpage, giparamthresh
   kdista2   locked_param kcv5, 0,     5, kpage, giparamthresh
@@ -293,7 +316,7 @@ instr 3    ;SNARE DRUM
   iNseDur   = idur * 0.6	    ;DURATION OF THE NOISE COMPONENT
   iPchDur   = idur * 0.2	    ;DURATION OF THE SINE TONES COMPONENT
   ibendur   = idur * 0.1
-  ktune	    = gktune2 * gimaxtune
+  ktune	    = octave(gktune2 * gimaxtune)
   ibendmult = p5 * gimaxbend
 
   ;SINE TONES COMPONENT
@@ -302,8 +325,8 @@ instr 3    ;SNARE DRUM
   
   kbend	transeg	1, ibendur, -1, 0 ;SLIGHT PITCH BEND AT THE START OF THE NOTE 
   kbend = kbend * ibendmult
-  apitch1 oscili 1, ifrq * octave(ktune) * semitone(kbend), gisine          ;SINE TONE 1
-  apitch2 oscili 0.25, ifrq * 0.5 * octave(ktune) * semitone(kbend), gisine ;SINE TONE 2 (AN OCTAVE LOWER)
+  apitch1 oscili 1, ifrq * ktune * semitone(kbend), gisine          ;SINE TONE 1
+  apitch2 oscili 0.25, ifrq * 0.5 * ktune * semitone(kbend), gisine ;SINE TONE 2 (AN OCTAVE LOWER)
   apitch = (apitch1 + apitch2) * 0.75					    ;MIX THE TWO SINE TONES
   asn = apitch * aenv1
   
@@ -312,7 +335,7 @@ instr 3    ;SNARE DRUM
   aenv2 = aenv2 - giexp0
   
   anoise noise 0.75, 0				      ;CREATE SOME NOISE
-  anoise butbp anoise, 10000 * octave(ktune), 10000   ;BANDPASS FILTER THE NOISE SIGNAL
+  anoise butbp anoise, 10000 * ktune, 10000   ;BANDPASS FILTER THE NOISE SIGNAL
   anoise buthp anoise, 1000			      ;HIGHPASS FILTER THE NOISE SIGNAL
   kcf expseg 5000, 0.1, 3000, iNseDur - 0.2, 3000     ;CUTOFF FREQUENCY FOR A LOWPASS FILTER
   anoise butlp anoise, kcf			      ;LOWPASS FILTER THE NOISE SIGNAL
@@ -337,13 +360,13 @@ instr 4    ;OPEN HIGH HAT
 
   idur  = p3 * gimaxdec
   
-  ktune = gktune3 * gimaxtune
-  kFrq1 = 296 * octave(ktune) 	;FREQUENCIES OF THE 6 OSCILLATORS
-  kFrq2 = 285 * octave(ktune) 	
-  kFrq3 = 365 * octave(ktune) 	
-  kFrq4 = 348 * octave(ktune) 	
-  kFrq5 = 420 * octave(ktune) 	
-  kFrq6 = 835 * octave(ktune) 	
+  ktune = octave(gktune3 * gimaxtune)
+  kFrq1 = 296 * ktune 	;FREQUENCIES OF THE 6 OSCILLATORS
+  kFrq2 = 285 * ktune 	
+  kFrq3 = 365 * ktune 	
+  kFrq4 = 348 * ktune 	
+  kFrq5 = 420 * ktune 	
+  kFrq6 = 835 * ktune 	
   
   
   ;SOUND CONSISTS OF 6 PULSE OSCILLATORS MIXED WITH A NOISE COMPONENT
@@ -359,13 +382,13 @@ instr 4    ;OPEN HIGH HAT
   a5	vco2	0.5, kFrq5, 2, kpw
   a6	vco2	0.5, kFrq6, 2, kpw
   amix	sum	a1, a2, a3, a4, a5, a6			;MIX THE PULSE OSCILLATORS
-  amix	reson	amix, 5000 * octave(ktune), 5000, 1	;BANDPASS FILTER THE MIXTURE
+  amix	reson	amix, 5000 * ktune, 5000, 1	;BANDPASS FILTER THE MIXTURE
   amix	buthp	amix, 5000				;HIGHPASS FILTER THE SOUND...
   amix	buthp	amix, 5000				;...AND AGAIN
   
   ;NOISE ELEMENT
   anoise	noise	0.8, 0				;GENERATE SOME WHITE NOISE
-  kcf	expseg	20000, 0.7, 9000, idur - 0.1, 9000	;CREATE A CUTOFF FREQ. ENVELOPE
+  kcf	expseg	20000, 0.1, 9000, idur - 0.1, 9000	;CREATE A CUTOFF FREQ. ENVELOPE
   anoise	butlp	anoise, kcf			;LOWPASS FILTER THE NOISE SIGNAL
   anoise	buthp	anoise, 8000			;HIGHPASS FILTER THE NOISE SIGNAL
   
@@ -388,13 +411,13 @@ endin
 instr	5    ;CLOSED HIGH HAT
   idur	= p3 * gichdec
   
-  ktune	= gktune4 * gimaxtune
-  kFrq1	= 296 * octave(ktune) 	;FREQUENCIES OF THE 6 OSCILLATORS
-  kFrq2	= 285 * octave(ktune) 	
-  kFrq3	= 365 * octave(ktune) 	
-  kFrq4	= 348 * octave(ktune) 	
-  kFrq5	= 420 * octave(ktune) 	
-  kFrq6	= 835 * octave(ktune) 	
+  ktune	= octave(gktune4 * gimaxtune)
+  kFrq1	= 296 * ktune 	;FREQUENCIES OF THE 6 OSCILLATORS
+  kFrq2	= 285 * ktune 	
+  kFrq3	= 365 * ktune 	
+  kFrq4	= 348 * ktune 	
+  kFrq5	= 420 * ktune 	
+  kFrq6	= 835 * ktune 	
   
   ;PITCHED ELEMENT
   aenv	expsega	1, idur, 0.001		;AMPLITUDE ENVELOPE FOR THE PULSE OSCILLATORS
@@ -407,13 +430,13 @@ instr	5    ;CLOSED HIGH HAT
   a5	vco2	0.5, kFrq5, 2, kpw
   a6	vco2	0.5, kFrq6, 2, kpw
   amix	sum	a1, a2, a3, a4, a5, a6			;MIX THE PULSE OSCILLATORS
-  amix	reson	amix, 5000 * octave(ktune), 5000, 1	;BANDPASS FILTER THE MIXTURE
+  amix	reson	amix, 5000 * ktune, 5000, 1	;BANDPASS FILTER THE MIXTURE
   amix	buthp	amix, 5000				;HIGHPASS FILTER THE SOUND...
   amix	buthp	amix, 5000				;...AND AGAIN
   
   ;NOISE ELEMENT
   anoise	noise	0.8, 0				;GENERATE SOME WHITE NOISE
-  kcf	expseg	20000, 0.7, 9000, idur - 0.1, 9000	;CREATE A CUTOFF FREQ. ENVELOPE
+  kcf	expseg	20000, 0.1, 9000, idur - 0.1, 9000	;CREATE A CUTOFF FREQ. ENVELOPE
   anoise	butlp	anoise, kcf			;LOWPASS FILTER THE NOISE SIGNAL
   anoise	buthp	anoise, 8000			;HIGHPASS FILTER THE NOISE SIGNAL
   
