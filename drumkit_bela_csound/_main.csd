@@ -26,6 +26,7 @@ giparamport 	= 0.01
 giparamthresh	= 0.05
 gigatethresh	= 0.1
 gimaxdec	= 2
+gichdec 	= 0.2
 gimaxtune	= 2
 gimaxbend	= 12
 
@@ -50,12 +51,12 @@ gibtn1 = 14
 gibtn2 = 13
 gibtn3 = 12
 
-giled_page1   = 6
-giled_page0   = 7
-giled_pan     = 10
-giled_foobar  = 2
-giled_bar     = 3
-giled_barfoo  = 0
+giled_page2   = 6
+giled_page1   = 7
+giled_page0   = 10
+giled_pan     = 2
+giled_btn2    = 3
+giled_btn3    = 0
 giled_id0     = 8
 giled_id1     = 5
 giled_id2     = 4
@@ -64,6 +65,18 @@ giled_id3     = 1
 gisine	ftgen 0, 0, 1024, 10, 1
 
 gicos	ftgen 0, 0, 4096, 9, 1, 1, 90
+
+ginextfree vco2init 8; do it here so it doesn't cause trouble with the instruments?
+ 
+prealloc 2, 1
+prealloc 3, 1
+prealloc 4, 1
+prealloc 5, 1
+maxalloc 2, 1
+maxalloc 3, 1
+maxalloc 4, 1
+maxalloc 5, 1
+
 
 #include "../udos/pages_buttons_params.udo"
 
@@ -98,32 +111,28 @@ instr 1
 ; bela buttons
   kpagebtn  digiInBela gibtn0
 
-  kpage	    page_incr_count_wrap kpagebtn, 2
+  kpage	    page_incr_count_wrap kpagebtn, 5
 
   kbtn1	    digiInBela gibtn1
+  gkbdpan   toggle_buttonk, kbtn1
+
   kbtn2	    digiInBela gibtn2
   kbtn3	    digiInBela gibtn3
 
-  if (kpage == 0) then 
-    gkbdpan   toggle_buttonk, kbtn1
-    gkfoo     toggle_buttonk, kbtn2
-    gkbar     toggle_buttonk, kbtn3
-  else
-    gkfoobar  toggle_buttonk, kbtn1
-    gkbarfoo  toggle_buttonk, kbtn2
-    gkfoofoo  toggle_buttonk, kbtn3
+  if (kbtn2 == 1 && kpage == 4) then
+    kpage += 1
   endif
 
-  digiOutBela kpage,	  giled_page0
+  digiOutBela kpage & 4,  giled_page2
+  digiOutBela kpage & 2,  giled_page1
+  digiOutBela kpage & 1,  giled_page0
   digiOutBela gkbdpan,	  giled_pan  
+  digiOutBela kbtn2,	  giled_btn2  
+  digiOutBela kbtn3,	  giled_btn3  
 
 ; bela CV inputs
-  agate1 chnget "analogIn0"
-  kgate1 = k(agate1)
-
-  agate2 chnget "analogIn1"
-  kgate2 = k(agate2)
-
+  acv0   chnget  "analogIn0"
+  acv1   chnget  "analogIn1"
   acv2   chnget  "analogIn2"
   acv3   chnget  "analogIn3"
   acv4   chnget  "analogIn4"
@@ -138,30 +147,104 @@ instr 1
   kcv6 = k(acv6)
   kcv7 = k(acv7)
 
-  kdec1	    locked_param kcv2, 0.75,  0, kpage, giparamthresh
+  kdecp1    locked_param kcv2, 0.75,  0, kpage, giparamthresh
   gktune1   locked_param kcv3, 0.25,  0, kpage, giparamthresh
   kbend1    locked_param kcv4, 0.5,   0, kpage, giparamthresh
   gkmix1    locked_param kcv5, 0.75,  0, kpage, giparamthresh
   kvol1	    locked_param kcv6, 0.75,  0, kpage, giparamthresh
-  gkdist1   locked_param kcv7, 0,     0, kpage, giparamthresh
+  kdistp1   locked_param kcv7, 0,     0, kpage, giparamthresh
   
-  kdec2	    locked_param kcv2, 0.75,  1, kpage, giparamthresh
+  kdecp2    locked_param kcv2, 0.75,  1, kpage, giparamthresh
   gktune2   locked_param kcv3, 0.25,  1, kpage, giparamthresh
   kbend2    locked_param kcv4, 0.5,   1, kpage, giparamthresh
   gkmix2    locked_param kcv5, 0.5,   1, kpage, giparamthresh
   kvol2	    locked_param kcv6, 0.75,  1, kpage, giparamthresh
-  gkdist2   locked_param kcv7, 0,     1, kpage, giparamthresh
+  kdistp2   locked_param kcv7, 0,     1, kpage, giparamthresh
+
+  kdecp3    locked_param kcv2, 0.75,  2, kpage, giparamthresh
+  gktune3   locked_param kcv3, 0.25,  2, kpage, giparamthresh
+  gkpw3	    locked_param kcv4, 0.5,   2, kpage, giparamthresh
+  gkmix3    locked_param kcv5, 0.5,   2, kpage, giparamthresh
+  kvol3	    locked_param kcv6, 0.75,  2, kpage, giparamthresh
+  kdistp3   locked_param kcv7, 0,     2, kpage, giparamthresh
+
+  kdecp4    locked_param kcv2, 0.75,  3, kpage, giparamthresh
+  gktune4   locked_param kcv3, 0.25,  3, kpage, giparamthresh
+  gkpw4	    locked_param kcv4, 0.5,   3, kpage, giparamthresh
+  gkmix4    locked_param kcv5, 0.5,   3, kpage, giparamthresh
+  kvol4	    locked_param kcv6, 0.75,  3, kpage, giparamthresh
+  kdistp4   locked_param kcv7, 0,     3, kpage, giparamthresh
+  
+  kdeca1    locked_param kcv4, 0.75,  4, kpage, giparamthresh
+  kdeca2    locked_param kcv5, 0.75,  4, kpage, giparamthresh
+  kdeca3    locked_param kcv6, 0.75,  4, kpage, giparamthresh
+  kdeca4    locked_param kcv7, 0.75,  4, kpage, giparamthresh
+
+  kdista1   locked_param kcv4, 0,     5, kpage, giparamthresh
+  kdista2   locked_param kcv5, 0,     5, kpage, giparamthresh
+  kdista3   locked_param kcv6, 0,     5, kpage, giparamthresh
+  kdista4   locked_param kcv7, 0,     5, kpage, giparamthresh
+
+  kdec1 = kdecp1
+  kdec2 = kdecp2
+  kdec3 = kdecp3
+  kdec4 = kdecp4
+  gkdist1 = kdistp1
+  gkdist2 = kdistp2
+  gkdist3 = kdistp3
+  gkdist4 = kdistp4
+  if (kpage == 0) then
+    ktrigbtn1 trigger kbtn3, gigatethresh, 0
+  elseif (kpage == 1) then 
+    ktrigbtn2 trigger kbtn3, gigatethresh, 0
+  elseif (kpage == 2) then 
+    ktrigbtn3 trigger kbtn3, gigatethresh, 0
+  elseif (kpage == 3) then 
+    ktrigbtn4 trigger kbtn3, gigatethresh, 0
+  else
+    kgate1 = k(acv0)
+    kgate2 = k(acv1)
+    kgate3 = k(acv2)
+    kgate4 = k(acv3)
+    kdec1 = kdeca1
+    kdec2 = kdeca2
+    kdec3 = kdeca3
+    kdec4 = kdeca4
+    gkdist1 = kdista1
+    gkdist2 = kdista2
+    gkdist3 = kdista3
+    gkdist4 = kdista4
+  endif
+
 
   ;BD trigger
   ktrig1 trigger kgate1, gigatethresh, 0
-  if (ktrig1 == 1) then
+  if (ktrig1 == 1 || ktrigbtn1 == 1) then
+    turnoff2 2, 0, 0 ; can only smack it once
     event "i", 2, 0, kdec1, kvol1, kbend1
   endif
   
   ;SN trigger
   ktrig2 trigger kgate2, gigatethresh, 0
-  if (ktrig2 == 1) then
+  if (ktrig2 == 1 || ktrigbtn2 == 1) then
+    turnoff2 3, 0, 0 ; can only smack it once
     event "i", 3, 0, kdec2, kvol2, kbend2
+  endif
+
+  ;OH trigger
+  ktrig3 trigger kgate3, gigatethresh, 0
+  if (ktrig3 == 1 || ktrigbtn3 == 1) then
+    turnoff2 4, 0, 0 ; can only smack it once
+    turnoff2 5, 0, 0 ; mute group for hats
+    event "i", 4, 0, kdec3, kvol3
+  endif
+  
+  ;CH trigger
+  ktrig4 trigger kgate4, gigatethresh, 0
+  if (ktrig4 == 1 || ktrigbtn4 == 1) then
+    turnoff2 5, 0, 0 ; can only smack it once
+    turnoff2 4, 0, 0 ; mute group for hats
+    event "i", 5, 0, kdec4, kvol4
   endif
   
 endin
@@ -250,6 +333,105 @@ instr 3    ;SNARE DRUM
   outs aL,aR             ;SEND AUDIO TO OUTPUTS
 endin
 
+instr 4    ;OPEN HIGH HAT
+
+  idur  = p3 * gimaxdec
+  
+  ktune = gktune3 * gimaxtune
+  kFrq1 = 296 * octave(ktune) 	;FREQUENCIES OF THE 6 OSCILLATORS
+  kFrq2 = 285 * octave(ktune) 	
+  kFrq3 = 365 * octave(ktune) 	
+  kFrq4 = 348 * octave(ktune) 	
+  kFrq5 = 420 * octave(ktune) 	
+  kFrq6 = 835 * octave(ktune) 	
+  
+  
+  ;SOUND CONSISTS OF 6 PULSE OSCILLATORS MIXED WITH A NOISE COMPONENT
+  ;PITCHED ELEMENT
+  aenv	linseg	1, idur - 0.05, 0.1, 0.05, 0		;AMPLITUDE ENVELOPE FOR THE PULSE OSCILLATORS
+  
+  kpw scale gkpw3, 0.5, 0
+  
+  a1	vco2	0.5, kFrq1, 2, kpw			;PULSE OSCILLATORS...
+  a2	vco2	0.5, kFrq2, 2, kpw
+  a3	vco2	0.5, kFrq3, 2, kpw
+  a4	vco2	0.5, kFrq4, 2, kpw
+  a5	vco2	0.5, kFrq5, 2, kpw
+  a6	vco2	0.5, kFrq6, 2, kpw
+  amix	sum	a1, a2, a3, a4, a5, a6			;MIX THE PULSE OSCILLATORS
+  amix	reson	amix, 5000 * octave(ktune), 5000, 1	;BANDPASS FILTER THE MIXTURE
+  amix	buthp	amix, 5000				;HIGHPASS FILTER THE SOUND...
+  amix	buthp	amix, 5000				;...AND AGAIN
+  
+  ;NOISE ELEMENT
+  anoise	noise	0.8, 0				;GENERATE SOME WHITE NOISE
+  kcf	expseg	20000, 0.7, 9000, idur - 0.1, 9000	;CREATE A CUTOFF FREQ. ENVELOPE
+  anoise	butlp	anoise, kcf			;LOWPASS FILTER THE NOISE SIGNAL
+  anoise	buthp	anoise, 8000			;HIGHPASS FILTER THE NOISE SIGNAL
+  
+  ;MIX PULSE OSCILLATOR AND NOISE COMPONENTS
+  aoh = ((gkmix3 * amix) + ((1 - gkmix3) * anoise)) * aenv
+  kdist scale, gkdist3, 0.99, 0		
+  adist powershape aoh, 1 - kdist   
+    
+  amix = adist * p4
+  if (gkbdpan == 1) then
+    kpan = 1
+  else
+    kpan = 0.5
+  endif
+
+  aL,aR	pan2	amix,kpan		;PAN MONOPHONIC SIGNAL
+  outs	aL,aR				;SEND TO OUTPUTS
+endin
+
+instr	5    ;CLOSED HIGH HAT
+  idur	= p3 * gichdec
+  
+  ktune	= gktune4 * gimaxtune
+  kFrq1	= 296 * octave(ktune) 	;FREQUENCIES OF THE 6 OSCILLATORS
+  kFrq2	= 285 * octave(ktune) 	
+  kFrq3	= 365 * octave(ktune) 	
+  kFrq4	= 348 * octave(ktune) 	
+  kFrq5	= 420 * octave(ktune) 	
+  kFrq6	= 835 * octave(ktune) 	
+  
+  ;PITCHED ELEMENT
+  aenv	expsega	1, idur, 0.001		;AMPLITUDE ENVELOPE FOR THE PULSE OSCILLATORS
+  
+  kpw scale gkpw4, 0.5, 0
+  a1	vco2	0.5, kFrq1, 2, kpw			;PULSE OSCILLATORS...			
+  a2	vco2	0.5, kFrq2, 2, kpw
+  a3	vco2	0.5, kFrq3, 2, kpw
+  a4	vco2	0.5, kFrq4, 2, kpw
+  a5	vco2	0.5, kFrq5, 2, kpw
+  a6	vco2	0.5, kFrq6, 2, kpw
+  amix	sum	a1, a2, a3, a4, a5, a6			;MIX THE PULSE OSCILLATORS
+  amix	reson	amix, 5000 * octave(ktune), 5000, 1	;BANDPASS FILTER THE MIXTURE
+  amix	buthp	amix, 5000				;HIGHPASS FILTER THE SOUND...
+  amix	buthp	amix, 5000				;...AND AGAIN
+  
+  ;NOISE ELEMENT
+  anoise	noise	0.8, 0				;GENERATE SOME WHITE NOISE
+  kcf	expseg	20000, 0.7, 9000, idur - 0.1, 9000	;CREATE A CUTOFF FREQ. ENVELOPE
+  anoise	butlp	anoise, kcf			;LOWPASS FILTER THE NOISE SIGNAL
+  anoise	buthp	anoise, 8000			;HIGHPASS FILTER THE NOISE SIGNAL
+  
+  ;MIX PULSE OSCILLATOR AND NOISE COMPONENTS
+  ach = ((gkmix4 * amix) + ((1 - gkmix4) * anoise)) * aenv
+  kdist scale, gkdist4, 0.99, 0		
+  adist powershape ach, 1 - kdist   
+    
+  amix = adist * p4
+  if (gkbdpan == 1) then
+    kpan = 1
+  else
+    kpan = 0.5
+  endif
+
+  aL,aR	pan2	amix,kpan			;PAN MONOPHONIC SIGNAL
+  	outs	aL,aR				;SEND TO OUTPUTS
+endin
 
 </CsInstruments>
 <CsScore>
