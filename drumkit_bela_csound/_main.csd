@@ -142,10 +142,6 @@ instr 1
   kbtn2	    digiInBela gibtn2
   kbtn3	    digiInBela gibtn3
 
-  if (kbtn2 == 1 && kpage == 4) then
-    kpage += 1
-  endif
-
   digiOutBela kpage & 4,  giled_page2
   digiOutBela kpage & 2,  giled_page1
   digiOutBela kpage & 1,  giled_page0
@@ -170,75 +166,112 @@ instr 1
   kcv6 = k(acv6)
   kcv7 = k(acv7)
 
-  kdecp1    locked_param kcv2, 0.75,  0, kpage, giparamthresh
-  gktune1   locked_param kcv3, 0.25,  0, kpage, giparamthresh
-  kbend1    locked_param kcv4, 0.5,   0, kpage, giparamthresh
-  gkmix1    locked_param kcv5, 0.75,  0, kpage, giparamthresh
-  kvol1	    locked_param kcv6, 0.75,  0, kpage, giparamthresh
-  kdistp1   locked_param kcv7, 0,     0, kpage, giparamthresh
-  
-  kdecp2    locked_param kcv2, 0.75,  1, kpage, giparamthresh
-  gktune2   locked_param kcv3, 0.25,  1, kpage, giparamthresh
-  kbend2    locked_param kcv4, 0.5,   1, kpage, giparamthresh
-  gkmix2    locked_param kcv5, 0.5,   1, kpage, giparamthresh
-  kvol2	    locked_param kcv6, 0.75,  1, kpage, giparamthresh
-  kdistp2   locked_param kcv7, 0,     1, kpage, giparamthresh
-
-  kdecp3    locked_param kcv2, 0.25,  2, kpage, giparamthresh
-  gktune3   locked_param kcv3, 0.25,  2, kpage, giparamthresh
-  gkpw3	    locked_param kcv4, 0.5,   2, kpage, giparamthresh
-  gkmix3    locked_param kcv5, 0.5,   2, kpage, giparamthresh
-  kvol3	    locked_param kcv6, 0.75,  2, kpage, giparamthresh
-  kdistp3   locked_param kcv7, 0,     2, kpage, giparamthresh
-
-  kdecp4    locked_param kcv2, 0.25,  3, kpage, giparamthresh
-  gktune4   locked_param kcv3, 0.25,  3, kpage, giparamthresh
-  gkpw4	    locked_param kcv4, 0.5,   3, kpage, giparamthresh
-  gkmix4    locked_param kcv5, 0.5,   3, kpage, giparamthresh
-  kvol4	    locked_param kcv6, 0.75,  3, kpage, giparamthresh
-  kdistp4   locked_param kcv7, 0,     3, kpage, giparamthresh
-  
-  kdeca1    locked_param kcv4, 0.75,  4, kpage, giparamthresh
-  kdeca2    locked_param kcv5, 0.75,  4, kpage, giparamthresh
-  kdeca3    locked_param kcv6, 0.25,  4, kpage, giparamthresh
-  kdeca4    locked_param kcv7, 0.25,  4, kpage, giparamthresh
-
-  kdista1   locked_param kcv4, 0,     5, kpage, giparamthresh
-  kdista2   locked_param kcv5, 0,     5, kpage, giparamthresh
-  kdista3   locked_param kcv6, 0,     5, kpage, giparamthresh
-  kdista4   locked_param kcv7, 0,     5, kpage, giparamthresh
-
-  kdec1 = kdecp1
-  kdec2 = kdecp2
-  kdec3 = kdecp3
-  kdec4 = kdecp4
-  gkdist1 = kdistp1
-  gkdist2 = kdistp2
-  gkdist3 = kdistp3
-  gkdist4 = kdistp4
+  kdec1active = 0
+  kdec2active = 0
+  kdec3active = 0
+  kdec4active = 0
+  kdist1active = 0
+  kdist2active = 0
+  kdist3active = 0
+  kdist4active = 0
+  ktune1active = 0
+  ktune2active = 0
+  ktune3active = 0
+  ktune4active = 0
   if (kpage == 0) then
     ktrigbtn1 trigger kbtn3, gigatethresh, 0
+    kdec1active = 1
+    kdist1active = 1
+    ktune1active = 1
+    kdec1in = kcv2
+    kdist1in = kcv7
+    ktune1in = kcv3
   elseif (kpage == 1) then 
     ktrigbtn2 trigger kbtn3, gigatethresh, 0
+    kdec2active = 1
+    kdist2active = 1
+    ktune2active = 1
+    kdec2in = kcv2
+    kdist2in = kcv7
+    ktune2in = kcv3
   elseif (kpage == 2) then 
     ktrigbtn3 trigger kbtn3, gigatethresh, 0
+    kdec3active = 1
+    kdist3active = 1
+    ktune3active = 1
+    kdec3in = kcv2
+    kdist3in = kcv7
+    ktune3in = kcv3
   elseif (kpage == 3) then 
     ktrigbtn4 trigger kbtn3, gigatethresh, 0
+    kdec3active = 1
+    kdist3active = 1
+    ktune3active = 1
+    kdec4in = kcv2
+    kdist4in = kcv7
+    ktune4in = kcv3
   else
     kgate1 = k(acv0)
     kgate2 = k(acv1)
     kgate3 = k(acv2)
     kgate4 = k(acv3)
-    kdec1 = kdeca1
-    kdec2 = kdeca2
-    kdec3 = kdeca3
-    kdec4 = kdeca4
-    gkdist1 = kdista1
-    gkdist2 = kdista2
-    gkdist3 = kdista3
-    gkdist4 = kdista4
+    if (kbtn2 == 1) then
+      kdist1active = 1
+      kdist2active = 1
+      kdist3active = 1
+      kdist4active = 1
+      kdist1in = kcv4
+      kdist2in = kcv5
+      kdist3in = kcv6
+      kdist4in = kcv7
+    elseif (kbtn3 == 1) then
+      ktune1active = 1
+      ktune2active = 1
+      ktune3active = 1
+      ktune4active = 1
+      ktune1in = kcv4
+      ktune2in = kcv5
+      ktune3in = kcv6
+      ktune4in = kcv7
+    else
+      kdec1active = 1
+      kdec2active = 1
+      kdec3active = 1
+      kdec4active = 1
+      kdec1in = kcv4
+      kdec2in = kcv5
+      kdec3in = kcv6
+      kdec4in = kcv7
+    endif
   endif
 
+  kdec1	  locked_param_bool kdec1in,  0.75, kdec1active, giparamthresh
+  gkdist1 locked_param_bool kdist1in, 0,    kdist1active, giparamthresh
+  gktune1 locked_param_bool ktune1in, 0.25, ktune1active, giparamthresh
+  kbend1  locked_param kcv4,	      0.5,  0, kpage, giparamthresh
+  gkmix1  locked_param kcv5,	      0.75, 0, kpage, giparamthresh
+  kvol1	  locked_param kcv6,	      0.75, 0, kpage, giparamthresh
+  
+  kdec2	  locked_param_bool kdec2in,  0.75, kdec2active, giparamthresh
+  gkdist2 locked_param_bool kdist2in, 0,    kdist2active, giparamthresh
+  gktune2 locked_param_bool ktune2in, 0.25, ktune2active, giparamthresh
+  kbend2  locked_param kcv4,	      0.5,  1, kpage, giparamthresh
+  gkmix2  locked_param kcv5, 	      0.5,  1, kpage, giparamthresh
+  kvol2	  locked_param kcv6, 	      0.75, 1, kpage, giparamthresh
+
+  kdec3	  locked_param_bool kdec3in,  0.75, kdec3active, giparamthresh
+  gkdist3 locked_param_bool kdist3in, 0,    kdist3active, giparamthresh
+  gktune3 locked_param_bool ktune3in, 0.25, ktune3active, giparamthresh
+  gkpw3	  locked_param kcv4,	      0.5,  2, kpage, giparamthresh
+  gkmix3  locked_param kcv5, 	      0.5,  2, kpage, giparamthresh
+  kvol3	  locked_param kcv6, 	      0.75, 2, kpage, giparamthresh
+
+  kdec4	  locked_param_bool kdec4in,  0.75, kdec4active, giparamthresh
+  gkdist4 locked_param_bool kdist4in, 0,    kdist4active, giparamthresh
+  gktune4 locked_param_bool ktune4in, 0.25, ktune4active, giparamthresh
+  gkpw4	  locked_param kcv4,	      0.5,  3, kpage, giparamthresh
+  gkmix4  locked_param kcv5, 	      0.5,  3, kpage, giparamthresh
+  kvol4	  locked_param kcv6, 	      0.75, 3, kpage, giparamthresh
 
   ;BD trigger
   ktrig1 trigger kgate1, gigatethresh, 0

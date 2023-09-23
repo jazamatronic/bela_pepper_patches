@@ -48,6 +48,37 @@ opcode locked_param, k, kiiki
 	xout kparam
 endop
 
+; outputs:	k = a parameter that has been locked
+; intputs:	k = the input value of the param source
+;		  This should be between 0 and 1
+;		i = init value
+;		k = Active
+;		i = The threshold
+; Output a lockable parameter - as soon as the current page is not equal
+;	to the specified page number, the parameter is locked and will continue
+; to output its previous value.
+; To unlock, the current page should equal the page number and the value
+; from the channel should be within threshold of the previous value
+; 
+opcode locked_param_bool, k, kiki
+	kin, iinit, kactive, ithresh xin
+	kparam init iinit
+	klocked init 1
+	if (kactive == 1) then
+		if (klocked == 1) then
+			if (abs(kin - kparam) < ithresh) then
+				klocked = 0
+				kparam = kin
+			endif
+		else
+			kparam = kin
+		endif
+	else
+		klocked = 1
+	endif
+	xout kparam
+endop
+
 ; outputs:	k = a variable that toggles between zero and one on each rising edge of the input
 ; intputs:	i = switch signal that's either zero or one, like from a momentary switch
 ; simple toggle detector
