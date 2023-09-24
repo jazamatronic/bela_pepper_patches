@@ -117,14 +117,14 @@ maxalloc 5, 1
 ; multi pages
 
 ; Buttons:
-;   1. Page
-;   2. Pan (Center or BD L, SN R)
-;   3. On performance page adjust distortion
-;   4. Trigger voice 
+;   0. Page
+;   1. Pan (Center or BD L, SN R)
+;   2. On performance page hold to adjust distortion
+;   3. Trigger voice - on performance page hold to adjust tuning
 ;
 ; Page zero Kick params:
 ;   one: Decay	two: Tuning
-;   two: Overtones	three: Tuning
+;   two: Overtones	three: 
 ;   four: Bend	five: Attack and Body mix
 ;   six: Vol 	seven: Distortion
 ;
