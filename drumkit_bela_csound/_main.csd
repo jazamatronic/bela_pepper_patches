@@ -225,7 +225,7 @@ instr 1
     kdist1active = 1
     ktune1active = 1
     kotone1active = 1
-1   kdec1in = kcv0
+    kdec1in = kcv0
     kdist1in = kcv7
     ktune1in = kcv1
   elseif (kpage == 1) then 
@@ -289,7 +289,7 @@ instr 1
 
   kdec1	  locked_param_bool kdec1in,  0.75, kdec1active, giparamthresh
   gktune1 locked_param_bool ktune1in, 0.25, ktune1active, giparamthresh
-  kotone1 locked_param kcv4,	      0.2,  0, kpage, giparamthresh
+  kotone1 locked_param kcv2,	      0.2,  0, kpage, giparamthresh
   kbend1  locked_param kcv4,	      0.5,  0, kpage, giparamthresh
   gkmix1  locked_param kcv5,	      0.75, 0, kpage, giparamthresh
   kvol1	  locked_param kcv6,	      0.75, 0, kpage, giparamthresh
