@@ -10,6 +10,39 @@
 ;
 ; Modified for Bela Pepper by Jared Anderson, 2023
 
+;
+; This uses ksmps set to 32 - update the block size settings in the Bela IDE accordingly
+;
+; If used as part of the loop_* functionality follow the instructions here
+;
+;	https://forum.bela.io/d/3582-per-csound-project-block-size-on-pepper-with-loop
+; 
+; Edit the file /opt/Bela/bela_startup.sh on the board.
+; 
+; This loop is what calls each project matching the loop_* pattern:
+; 
+;         for PROJECT in "$BELA_HOME"/projects/loop_*; do
+;             echo Running $PROJECT;
+;             /usr/bin/make -C /root/Bela PROJECT=`basename "${PROJECT}"` CL="${ARGS}" runonly
+;         done
+;
+; the ARGS variable contains the command-line values that are passed to the project. 
+; When selecting loop_*, this is empty. Inside the loop, you could overwrite it for the desired project. 
+; Something like this should do, if you replace MYPROJECT with the name of the project that needs a blocksize of 32.
+; 
+;         for PROJECT in "$BELA_HOME"/projects/loop_*; do
+;             echo Running $PROJECT;
+;	      PROJNAME=`basename $PROJECT`
+;             if [ "$PROJNAME" == "MYPROJECT" ]; then
+;                 ARGS="-p32"
+;             fi
+;             /usr/bin/make -C /root/Bela PROJECT=`basename "${PROJECT}"` CL="${ARGS}" runonly
+;         done
+; 
+; grep -- "\"-p\"" ./C++-libcsound-Control/settings.json | gawk -F\" '{print $4}'
+; cat examples/Csound/C++-libcsound-Control/settings.json | jq -r '.CLArgs | ."-p"'
+
+
 <CsoundSynthesizer>
 <CsOptions>
 -m0d
@@ -17,7 +50,7 @@
 <CsInstruments>
 
 sr = 44100
-ksmps = 16
+ksmps = 32
 nchnls = 2
 0dbfs = 1
 
@@ -90,22 +123,23 @@ maxalloc 5, 1
 ;   4. Trigger voice 
 ;
 ; Page zero Kick params:
-;   two: Decay	three: Tuning
+;   one: Decay	two: Tuning
+;   two: Overtones	three: Tuning
 ;   four: Bend	five: Attack and Body mix
 ;   six: Vol 	seven: Distortion
 ;
 ; Page one Snare params:
-;   two: Decay	three: Tuning
+;   one: Decay	two: Tuning
 ;   four: Bend	five: Noise and Body mix
 ;   six: Vol 	seven: Distortion
 ;
 ; Page two Open Hi Hat params:
-;   two: Decay	three: Tuning
+;   one: Decay	two: Tuning
 ;   four: OscPW five: Noise and Body mix
 ;   six: Vol 	seven: Distortion
 ;   
 ; Page three Closed Hi Hat params:
-;   two: Decay	three: Tuning
+;   one: Decay	two: Tuning
 ;   four: OscPW	five: Noise and Body mix
 ;   six: Vol 	seven: Distortion
 ;   
@@ -115,11 +149,15 @@ maxalloc 5, 1
 ;   four: BD Dec  five: SN Dec
 ;   six:  OH Dec  seven: CH Dec
 ;
-; or with btn 3 depressed
+; or with btn 2 depressed
 ;
 ;   four: BD Dist  five: SN Dist
 ;   six:  OH Dist  seven: CH Dist
 ;
+; or with btn 3 depressed
+;
+;   four: BD Tune  five: SN Tune
+;   six:  OH Tune  seven: CH Tune
 ;
 ; IO trigger
 instr 1
@@ -159,6 +197,8 @@ instr 1
   acv6   chnget  "analogIn6"
   acv7   chnget  "analogIn7"
 
+  kcv0 = k(acv0)
+  kcv1 = k(acv1)
   kcv2 = k(acv2)
   kcv3 = k(acv3)
   kcv4 = k(acv4)
@@ -170,46 +210,48 @@ instr 1
   kdec2active = 0
   kdec3active = 0
   kdec4active = 0
-  kdist1active = 0
-  kdist2active = 0
-  kdist3active = 0
-  kdist4active = 0
   ktune1active = 0
   ktune2active = 0
   ktune3active = 0
   ktune4active = 0
+  kdist1active = 0
+  kdist2active = 0
+  kdist3active = 0
+  kdist4active = 0
+  kotone1active = 0
   if (kpage == 0) then
     ktrigbtn1 trigger kbtn3, gigatethresh, 0
     kdec1active = 1
     kdist1active = 1
     ktune1active = 1
-    kdec1in = kcv2
+    kotone1active = 1
+1   kdec1in = kcv0
     kdist1in = kcv7
-    ktune1in = kcv3
+    ktune1in = kcv1
   elseif (kpage == 1) then 
     ktrigbtn2 trigger kbtn3, gigatethresh, 0
     kdec2active = 1
     kdist2active = 1
     ktune2active = 1
-    kdec2in = kcv2
+    kdec2in = kcv0
     kdist2in = kcv7
-    ktune2in = kcv3
+    ktune2in = kcv1
   elseif (kpage == 2) then 
     ktrigbtn3 trigger kbtn3, gigatethresh, 0
     kdec3active = 1
     kdist3active = 1
     ktune3active = 1
-    kdec3in = kcv2
+    kdec3in = kcv0
     kdist3in = kcv7
-    ktune3in = kcv3
+    ktune3in = kcv1
   elseif (kpage == 3) then 
     ktrigbtn4 trigger kbtn3, gigatethresh, 0
     kdec3active = 1
     kdist3active = 1
     ktune3active = 1
-    kdec4in = kcv2
+    kdec4in = kcv0
     kdist4in = kcv7
-    ktune4in = kcv3
+    ktune4in = kcv1
   else
     kgate1 = k(acv0)
     kgate2 = k(acv1)
@@ -246,38 +288,39 @@ instr 1
   endif
 
   kdec1	  locked_param_bool kdec1in,  0.75, kdec1active, giparamthresh
-  gkdist1 locked_param_bool kdist1in, 0,    kdist1active, giparamthresh
   gktune1 locked_param_bool ktune1in, 0.25, ktune1active, giparamthresh
+  kotone1 locked_param kcv4,	      0.2,  0, kpage, giparamthresh
   kbend1  locked_param kcv4,	      0.5,  0, kpage, giparamthresh
   gkmix1  locked_param kcv5,	      0.75, 0, kpage, giparamthresh
   kvol1	  locked_param kcv6,	      0.75, 0, kpage, giparamthresh
+  gkdist1 locked_param_bool kdist1in, 0,    kdist1active, giparamthresh
   
   kdec2	  locked_param_bool kdec2in,  0.75, kdec2active, giparamthresh
-  gkdist2 locked_param_bool kdist2in, 0,    kdist2active, giparamthresh
   gktune2 locked_param_bool ktune2in, 0.25, ktune2active, giparamthresh
   kbend2  locked_param kcv4,	      0.5,  1, kpage, giparamthresh
   gkmix2  locked_param kcv5, 	      0.5,  1, kpage, giparamthresh
   kvol2	  locked_param kcv6, 	      0.75, 1, kpage, giparamthresh
+  gkdist2 locked_param_bool kdist2in, 0,    kdist2active, giparamthresh
 
   kdec3	  locked_param_bool kdec3in,  0.75, kdec3active, giparamthresh
-  gkdist3 locked_param_bool kdist3in, 0,    kdist3active, giparamthresh
   gktune3 locked_param_bool ktune3in, 0.25, ktune3active, giparamthresh
   gkpw3	  locked_param kcv4,	      0.5,  2, kpage, giparamthresh
   gkmix3  locked_param kcv5, 	      0.5,  2, kpage, giparamthresh
   kvol3	  locked_param kcv6, 	      0.75, 2, kpage, giparamthresh
+  gkdist3 locked_param_bool kdist3in, 0,    kdist3active, giparamthresh
 
   kdec4	  locked_param_bool kdec4in,  0.75, kdec4active, giparamthresh
-  gkdist4 locked_param_bool kdist4in, 0,    kdist4active, giparamthresh
   gktune4 locked_param_bool ktune4in, 0.25, ktune4active, giparamthresh
   gkpw4	  locked_param kcv4,	      0.5,  3, kpage, giparamthresh
   gkmix4  locked_param kcv5, 	      0.5,  3, kpage, giparamthresh
   kvol4	  locked_param kcv6, 	      0.75, 3, kpage, giparamthresh
+  gkdist4 locked_param_bool kdist4in, 0,    kdist4active, giparamthresh
 
   ;BD trigger
   ktrig1 trigger kgate1, gigatethresh, 0
   if (ktrig1 == 1 || ktrigbtn1 == 1) then
     turnoff2 2, 0, 0 ; can only smack it once
-    event "i", 2, 0, kdec1, kvol1, kbend1
+    event "i", 2, 0, kdec1, kvol1, kbend1, kotone1
   endif
   
   ;SN trigger
@@ -310,10 +353,12 @@ instr 2    ;BASS DRUM
   idur	    = p3 * gimaxdec
   ibendur   = idur * 0.2
   ibendmult = p5 * gimaxbend
+  iotone    = p6
   ktune	    = gktune1 * gimaxtune
+  
 
   ;SUSTAIN AND BODY OF THE SOUND
-  kmul	transeg 0.2, idur*0.5, -15, 0.01, idur*0.5, 0, 0  ;PARTIAL STRENGTHS MULTIPLIER USED BY GBUZZ. DECAYS FROM A SOUND WITH OVERTONES TO A SINE TONE.                   
+  kmul	transeg iotone, idur * 0.5, -15, 0.01, idur * 0.5, 0, 0  ;PARTIAL STRENGTHS MULTIPLIER USED BY GBUZZ. DECAYS FROM A SOUND WITH OVERTONES TO A SINE TONE.                   
   kbend transeg 1, ibendur, -1, 0			  ;SLIGHT PITCH BEND AT THE START OF THE NOTE 
   abody gbuzz   0.75, 40 * octave(ktune) * semitone(ibendmult * kbend), 20, 1, kmul, gicos        ;GBUZZ TONE
   
