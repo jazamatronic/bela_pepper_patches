@@ -218,13 +218,11 @@ instr 1
   kdist2active = 0
   kdist3active = 0
   kdist4active = 0
-  kotone1active = 0
   if (kpage == 0) then
     ktrigbtn1 trigger kbtn3, gigatethresh, 0
     kdec1active = 1
     kdist1active = 1
     ktune1active = 1
-    kotone1active = 1
     kdec1in = kcv0
     kdist1in = kcv7
     ktune1in = kcv1
@@ -289,7 +287,8 @@ instr 1
 
   kdec1	  locked_param_bool kdec1in,  0.75, kdec1active, giparamthresh
   gktune1 locked_param_bool ktune1in, 0.25, ktune1active, giparamthresh
-  kotone1 locked_param kcv2,	      0.2,  0, kpage, giparamthresh
+  kotone1 locked_param kcv2,	      0.5,  0, kpage, giparamthresh
+  ktondc1 locked_param kcv3,	      0.75, 0, kpage, giparamthresh
   kbend1  locked_param kcv4,	      0.5,  0, kpage, giparamthresh
   gkmix1  locked_param kcv5,	      0.75, 0, kpage, giparamthresh
   kvol1	  locked_param kcv6,	      0.75, 0, kpage, giparamthresh
@@ -318,9 +317,10 @@ instr 1
 
   ;BD trigger
   ktrig1 trigger kgate1, gigatethresh, 0
+  ktondc1 scale ktondc1, 5, -20
   if (ktrig1 == 1 || ktrigbtn1 == 1) then
     turnoff2 2, 0, 0 ; can only smack it once
-    event "i", 2, 0, kdec1, kvol1, kbend1, kotone1
+    event "i", 2, 0, kdec1, kvol1, kbend1, kotone1, ktondc1
   endif
   
   ;SN trigger
@@ -354,11 +354,13 @@ instr 2    ;BASS DRUM
   ibendur   = idur * 0.2
   ibendmult = p5 * gimaxbend
   iotone    = p6
+  itonedec  = p7
+
   ktune	    = gktune1 * gimaxtune
   
 
   ;SUSTAIN AND BODY OF THE SOUND
-  kmul	transeg iotone, idur * 0.5, -15, 0.01, idur * 0.5, 0, 0  ;PARTIAL STRENGTHS MULTIPLIER USED BY GBUZZ. DECAYS FROM A SOUND WITH OVERTONES TO A SINE TONE.                   
+  kmul	transeg iotone, idur * 0.5, itonedec, 0.01, idur * 0.5, 0, 0  ;PARTIAL STRENGTHS MULTIPLIER USED BY GBUZZ. DECAYS FROM A SOUND WITH OVERTONES TO A SINE TONE.                   
   kbend transeg 1, ibendur, -1, 0			  ;SLIGHT PITCH BEND AT THE START OF THE NOTE 
   abody gbuzz   0.75, 40 * octave(ktune) * semitone(ibendmult * kbend), 20, 1, kmul, gicos        ;GBUZZ TONE
   
