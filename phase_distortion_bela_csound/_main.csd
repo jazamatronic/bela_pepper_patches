@@ -192,10 +192,10 @@ instr 1
   gkmix	  locked_param kcv7, 1,	  1, kpage, giparamthresh
 	  
   if (gkpdmod == 1) then
-  		kpdamte = kpdamt * gkenvo
-  	else
-  		kpdamte = kpdamt
-  	endif
+  	kpdamte = kpdamt * gkenvo
+  else
+  	kpdamte = kpdamt
+  endif
   gkpdamt portk kpdamte, giparamport
   gktab portk ktab * (ginumtabs - 1), giparamport
   
@@ -297,11 +297,7 @@ instr 5
   
 
   khertzi = cpsmidinn(int(gkmidinote))
-  if (gkport == 1) then
-    khertz portk khertzi, gkptim
-  else
-    khertz = khertzi
-  endif
+  khertz portk khertzi, gkptim
   
   kdtndn = 1 - kdtn
   kdtnup = 1 + (kdtn * 2)
