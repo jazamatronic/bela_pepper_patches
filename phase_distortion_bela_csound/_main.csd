@@ -53,10 +53,10 @@ gibtn3 = 12
 giled_page    = 6
 giled_fcmod   = 7
 giled_style   = 10
-giled_sync    = 2
+giled_pdmod   = 2
 giled_exp_env = 3
 giled_env_inv = 0
-giled_port    = 1
+giled_sync    = 1
 giled_id0 = 8
 giled_id1 = 5
 giled_id2 = 4
@@ -103,7 +103,7 @@ gisig ftgen 0, 0, 256, 19, 0.5, 0.5, 270, 0.5
 ;     six:  dtn	  seven: dist
 ;
 ;   Buttons:
-;     fcmod pd_style sync 
+;     fcmod pd_style pdmod 
 ;   
 ; Page one:
 ;   CV:
@@ -112,7 +112,7 @@ gisig ftgen 0, 0, 256, 19, 0.5, 0.5, 270, 0.5
 ;     six:  port  seven: mix
 ;
 ;   Buttons:
-;     exp_env env_inv portamento
+;     exp_env env_inv sync
 ;   
 
 ; adsr trigger
@@ -139,20 +139,20 @@ instr 1
   if (kpage == 0) then 
     gkfcmod   toggle_buttonk, kbtn1
     gkstyle   toggle_buttonk, kbtn2
-    gksync    toggle_buttonk, kbtn3
+    gkpdmod   toggle_buttonk, kbtn3
   else
     gkexp_env toggle_buttonk, kbtn1
     gkenv_inv toggle_buttonk, kbtn2
-    gkport    toggle_buttonk, kbtn3
+    gksync    toggle_buttonk, kbtn3
   endif
 
   digiOutBela kpage,	  giled_page
   digiOutBela gkfcmod,	  giled_fcmod  
   digiOutBela gkstyle, 	  giled_style  
-  digiOutBela gksync,  	  giled_sync   
+  digiOutBela gkpdmod,    giled_pdmod   
   digiOutBela gkexp_env,  giled_exp_env
   digiOutBela gkenv_inv,  giled_env_inv
-  digiOutBela gkport,     giled_port   
+  digiOutBela gksync,  	  giled_sync   
 
 
 ; bela CV inputs
@@ -179,7 +179,7 @@ instr 1
 
   gkfc	  locked_param kcv2, 0.5,   0, kpage, giparamthresh
   gkq	  locked_param kcv3, 0,	    0, kpage, giparamthresh
-  kpdamt  locked_param kcv4, 0.5,   0, kpage, giparamthresh
+  kpdamt  locked_param kcv4, 0,   0, kpage, giparamthresh
   ktab	  locked_param kcv5, 0,	    0, kpage, giparamthresh
   gkdtn	  locked_param kcv6, 0,	    0, kpage, giparamthresh
   gkdist  locked_param kcv7, 0,	    0, kpage, giparamthresh
@@ -191,7 +191,12 @@ instr 1
   gkptim  locked_param kcv6, 0,	  1, kpage, giparamthresh
   gkmix	  locked_param kcv7, 1,	  1, kpage, giparamthresh
 	  
-  gkpdamt portk kpdamt * 2 - 1, giparamport
+  if (gkpdmod == 1) then
+  		kpdamte = kpdamt * gkenvo
+  	else
+  		kpdamte = kpdamt
+  	endif
+  gkpdamt portk kpdamte, giparamport
   gktab portk ktab * (ginumtabs - 1), giparamport
   
   ktrig trigger gkgate, gigatethresh, 2 ; triggers on both edges
