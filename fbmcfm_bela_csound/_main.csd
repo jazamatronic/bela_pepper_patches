@@ -54,7 +54,7 @@ giled_order   = 10
 giled_sync    = 2
 giled_exp_env = 3
 giled_env_inv = 0
-giled_port    = 1
+giled_modi    = 1
 giled_id0 = 8
 giled_id1 = 5
 giled_id2 = 4
@@ -122,7 +122,7 @@ instr 1
   else
     gkexp_env toggle_buttonk, kbtn1
     gkenv_inv toggle_buttonk, kbtn2
-    gkport    toggle_buttonk, kbtn3
+    gkmodien  toggle_buttonk, kbtn3
   endif
 
   digiOutBela kpage,	  giled_page
@@ -131,7 +131,7 @@ instr 1
   digiOutBela gksync,  	  giled_sync   
   digiOutBela gkexp_env,  giled_exp_env
   digiOutBela gkenv_inv,  giled_env_inv
-  digiOutBela gkport,     giled_port   
+  digiOutBela gkmodien,   giled_modi
 
 
 ; bela CV inputs
@@ -270,19 +270,18 @@ instr 5
   
   kbeta tablei	gkbeta, giexp, 1
   kbeta =	kbeta * gibetamax
-  ; maybe think of a way to toggle env of modi
-  kmodi = 	gkmodi * gimodimax * gaenvo
+  if (gkmodien == 1) then
+    kmodi = 	gkmodi * gimodimax * gaenvo
+  else
+    kmodi = 	gkmodi * gimodimax
+  endif
   kdtns  tablei gkdtn, gisig, 1
   kdtn  scale kdtns, 0.5, 0
   ;kdtn  scale	gkdtn, 0.5, 0
   
   
   khertzi = cpsmidinn(int(gkmidinote))
-  if (gkport == 1) then
-    khertz portk khertzi, gkptim
-  else
-    khertz = khertzi
-  endif
+  khertz portk khertzi, gkptim
   
   kdtndn = 1 - kdtn
   kdtnup = 1 + (kdtn * 2)
