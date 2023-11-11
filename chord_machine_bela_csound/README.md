@@ -59,4 +59,4 @@ Buttons page 1:
 
 Controls:  
 
-![controls](https://github.com/jazamatronic/bela_pepper_patches/blob/main/chord_machine_bela_csound/pd.png)
+![controls](https://github.com/jazamatronic/bela_pepper_patches/blob/main/chord_machine_bela_csound/chord_machine.png)
