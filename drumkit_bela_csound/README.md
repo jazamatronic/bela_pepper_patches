@@ -75,4 +75,4 @@ Analog Inputs Page 4 for performance
 
 Controls:  
 
-![controls](https://github.com/jazamatronic/bela_pepper_patches/blob/main/drumkit_bela_csound/dk.png)
+![controls](https://github.com/jazamatronic/bela_pepper_patches/blob/main/drumkit_bela_csound/drumkit.png)
